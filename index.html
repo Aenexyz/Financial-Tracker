@@ -50,6 +50,7 @@ button{cursor:pointer}
 .bar1{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .brand{font-weight:800;font-size:20px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
 .acts{display:flex;gap:6px}
+@media(max-width:380px){.ib{width:40px;height:40px}.acts{gap:4px}}
 .ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--soft);display:grid;place-items:center}
 .ib svg{width:21px;height:21px}
 .hero{padding:22px 0 18px}
@@ -62,7 +63,24 @@ button{cursor:pointer}
 .paybtn{margin-top:12px;width:100%;height:54px;border:0;border-radius:16px;background:var(--acc);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 22px -14px var(--acc)}
 .paybtn:active{transform:scale(.985)}
 .pick{display:grid;gap:8px;margin-bottom:16px}
-.src{position:relative;display:block}
+.src{position:relative;display:block;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.srow{display:flex;align-items:stretch}
+.srow .src{flex:1;min-width:0}
+.gopay{flex:none;width:0;margin-left:0;padding:0;opacity:0;overflow:hidden;border:0;border-radius:16px;background:var(--acc);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;gap:2px;transition:width .24s cubic-bezier(.2,.8,.2,1),margin .24s,opacity .18s}
+.gopay svg{width:22px;height:22px}
+.srow.armed .gopay{width:92px;margin-left:8px;opacity:1}
+.hist-sum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:0 0 6px}
+.hist-sum div{background:var(--soft);border-radius:16px;padding:12px 14px}
+.hist-sum span{display:block;color:var(--mut);font-size:13px;font-weight:600}.hist-sum b{font-size:17px;font-weight:800}
+.hday{display:flex;justify-content:space-between;margin:18px 2px 6px;font-size:14px;font-weight:700;color:var(--mut)}
+.hgrp{background:var(--soft);border-radius:18px;overflow:hidden}
+.hrow{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:10px 14px;border:0;border-top:1px solid var(--line);background:none;text-align:left}
+.hgrp>.hrow:first-child{border-top:0}
+.hrow .hc{width:10px;height:36px;border-radius:4px;flex:none}
+.hrow .ht{flex:1;min-width:0}.hrow .ht b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hrow .ht small{color:var(--mut);font-size:13px}
+.hrow strong{font-weight:800;white-space:nowrap;text-align:right}.hrow strong small{display:block;font-weight:600;font-size:12px;color:var(--mut)}
+.hx{padding:0 14px 12px 36px;font-size:14px;color:var(--mut);display:grid;gap:8px}
+.hx button{justify-self:start;height:40px;padding:0 14px;border:0;border-radius:11px;background:var(--bg);color:var(--neg);font-weight:800;font-size:14px}
 .src input{position:absolute;opacity:0}
 .src-c{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 14px;border-radius:16px;border:2px solid var(--line);background:var(--soft);cursor:pointer}
 .src-c i{grid-row:span 2;width:14px;height:36px;border-radius:5px;background:var(--c)}
@@ -243,6 +261,7 @@ button{cursor:pointer}
     <span class="brand"><svg width="26" height="26" viewBox="0 0 56 56" aria-hidden="true"><rect x="4" y="12" width="48" height="34" rx="9" fill="#ff4d2e"/><rect x="11" y="32" width="12" height="8" rx="2" fill="#f3d27a"/></svg>Vault</span>
     <div class="acts">
       <button class="ib" id="eye" aria-label="Hide balances"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <button class="ib" id="histBtn" aria-label="Payment history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>
       <button class="ib" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
       <button class="ib" id="lockBtn" aria-label="Lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
     </div>
@@ -337,6 +356,7 @@ try{const d=JSON.parse(localStorage.getItem(LS)||'null');if(d&&Array.isArray(d.a
 if(!TABS.includes(tab))tab='savings';
 function ensureFlow(){if(!Array.isArray(S.income)||!Array.isArray(S.expenses)){S.income=SINC();S.expenses=SEXP();S.flowSample=true}if(S.period!=='month')S.period='week';ensureCur()}
 function ensureCur(){
+ try{pruneTx()}catch(e){}
  if(S.v!==2){S.v=2;S.currency='PHP';S.rates=null;
   if(S.sample)S.accounts=SAMPLE();else S.accounts.forEach(x=>{if(!x.cur||x.cur==='SGD')x.cur='PHP'});
   if(S.flowSample){S.income=SINC();S.expenses=SEXP()}else[...S.income,...S.expenses].forEach(x=>{if(!x.cur||x.cur==='SGD')x.cur='PHP'})}
@@ -556,6 +576,33 @@ $('#setBtn').onclick=openSettings;
 /* ---------- pay ---------- */
 const paySrc=()=>S.accounts.filter(a=>a.type==='savings'||a.type==='credit');
 const accLabel=a=>(a.bank||'Account')+(a.name?' '+a.name:'');
+let lastTap={el:null,t:0};
+function armRow(sr){form.querySelectorAll('.srow.armed').forEach(x=>{if(x!==sr){x.classList.remove('armed');x.querySelector('.gopay').tabIndex=-1}});if(sr){sr.classList.add('armed');sr.querySelector('.gopay').tabIndex=0}}
+function goPay(){const i=$('#payAmt');if(!i)return;try{i.focus({preventScroll:true})}catch(e){i.focus()}setTimeout(()=>i.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'}),60)}
+function pruneTx(){const c=new Date();c.setMonth(c.getMonth()-3);const cut=c.getTime();S.tx=(Array.isArray(S.tx)?S.tx:[]).filter(t=>t&&t.at>=cut).slice(0,3000)}
+let histF='all',histOpen='';
+function txView(t){const at=new Date(t.at),time=at.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+ if(t.kind==='bill'){const g=S.accounts.find(x=>x.id===t.tgt),sa=S.accounts.find(x=>x.id===t.src);return{title:'Payment to '+(g?accLabel(g):'deleted account'),sub:(t.src?(sa?'From '+(sa.bank||'account'):'From a deleted account'):'Cash or other account')+' · '+time,col:g&&okColor(g.color)?g.color:'#888',amt:mo(t.amt,t.cur),tag:'Bill payment',can:!!g,detail:[g?`${g.type==='loan'?'Remaining':'Owed'} reduced by ${mo(t.amt,t.cur)}`:'',sa?`${esc(accLabel(sa))} reduced by ${mo(t.srcAmt,t.srcCur||sa.cur)}`:'',t.adv?'Due date moved forward':''].filter(Boolean)}}
+ const a=S.accounts.find(x=>x.id===t.acc);return{title:t.note||'Purchase',sub:(a?(a.bank||'account')+(a.type==='credit'?' card':''):'Deleted account')+' · '+time,col:a&&okColor(a.color)?a.color:'#888',amt:'−'+mo(t.amt,t.cur),tag:a&&a.type==='credit'?'Card purchase':'Purchase',can:!!a,detail:[a?(a.type==='credit'?`Added ${mo(t.amt,t.cur)} to what you owe on ${esc(accLabel(a))}`:`Taken from ${esc(accLabel(a))}`):'']}}
+function openHistory(f){
+ editing='hist';if(f)histF=f;pruneTx();const all=S.tx||[];
+ const list=all.filter(t=>histF==='all'||(histF==='bill'?t.kind==='bill':t.kind!=='bill'));
+ const since=new Date();since.setDate(since.getDate()-30);const m30=all.filter(t=>t.at>=since.getTime());
+ const sp=m30.filter(t=>t.kind!=='bill').reduce((s,t)=>s+conv(t.amt,t.cur),0),bp=m30.filter(t=>t.kind==='bill').reduce((s,t)=>s+conv(t.amt,t.cur),0);
+ const days=[];list.forEach(t=>{const d=new Date(t.at),k=ymd(d);let g=days.find(x=>x.k===k);if(!g){g={k,d,l:[]};days.push(g)}g.l.push(t)});
+ const t0=new Date();t0.setHours(0,0,0,0);
+ const dayName=d=>{const n=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-t0)/864e5);return n===0?'Today':n===-1?'Yesterday':d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})};
+ const seg=`<div class="per pm" role="group" aria-label="Filter" style="grid-template-columns:repeat(3,1fr)">${[['all','All'],['buy','Purchases'],['bill','Bills']].map(([k,l])=>`<button type="button" data-hf="${k}" aria-pressed="${histF===k}">${l}</button>`).join('')}</div>`;
+ form.innerHTML=`<div class="grab"></div><h3>History</h3>${seg}
+ <div class="hist-sum"><div><span>Purchases · last 30 days</span><b class="num">${m(sp)}</b></div><div><span>Bills paid · last 30 days</span><b class="num">${m(bp)}</b></div></div>
+ ${days.length?days.map(g=>`<p class="hday"><span>${esc(dayName(g.d))}</span><span class="num">${m(g.l.reduce((s,t)=>s+conv(t.amt,t.cur),0))}</span></p><div class="hgrp">${g.l.map(t=>{const v=txView(t),open=histOpen===t.id;
+  return `<button type="button" class="hrow" data-tx="${esc(t.id)}" aria-expanded="${open}"><span class="hc" style="background:${v.col}"></span><span class="ht"><b>${esc(v.title)}</b><small>${esc(v.sub)}</small></span><strong class="num">${v.amt}<small>${v.tag}</small></strong></button>${open?`<div class="hx">${v.detail.map(x=>`<span>${x}</span>`).join('')}${v.can?`<button type="button" data-undo="${esc(t.id)}">Undo this payment</button>`:''}</div>`:''}`}).join('')}</div>`).join('')
+  :`<div class="empty" style="margin-top:14px">${all.length?'Nothing here for this filter.':'No payments yet. Use Pay to record a purchase or pay a bill.'}</div>`}
+ <p class="hint" style="margin-top:16px;text-align:center">Payments are kept for 3 months.</p>
+ <div class="btns"><button class="sec2" type="button" id="cancel">Close</button></div>`;
+ sheet.hidden=false;
+}
+$('#histBtn').onclick=()=>{histOpen='';openHistory('all')};
 function payPreview(){
  const box=$('#payInfo');if(!box)return;const id=(form.querySelector('[name=src]:checked')||{}).value,a=S.accounts.find(x=>x.id===id),amt=num($('#payAmt').value);
  if(!a){box.textContent='Choose where to pay from.';box.className='prev';return}
@@ -570,8 +617,8 @@ function openPay(pre){
  if(!src.length){form.innerHTML=`<div class="grab"></div><h3>Pay</h3><div class="per pm" role="group" aria-label="Payment type"><button type="button" data-pm="buy" aria-pressed="true">Purchase</button><button type="button" data-pm="bill" aria-pressed="false">Pay a loan or card</button></div><p class="hint" style="font-size:15px">Add a bank account or credit card first, then you can pay from it here.</p><div class="btns"><button class="sec2" type="button" id="cancel">Close</button></div>`;sheet.hidden=false;return}
  const sel=src.find(a=>a.id===pre)||src.find(a=>a.id===S.lastSrc)||src[0];
  const grp=(t,h)=>{const l=src.filter(a=>a.type===t);return l.length?`<p class="pgh">${h}</p>`+l.map(a=>{const av=a.type==='credit'&&num(a.limit)?`${mo(num(a.limit)-num(a.balance),a.cur)}<small>available</small>`:a.type==='credit'?`${mo(num(a.balance),a.cur)}<small>owed</small>`:`${mo(num(a.balance),a.cur)}<small>balance</small>`;
-  return `<label class="src"><input type="radio" name="src" value="${esc(a.id)}" ${a===sel?'checked':''}><span class="src-c" style="--c:${okColor(a.color)?a.color:'#2b2d42'}"><i></i><b>${esc(a.bank||'Account')}</b><em class="num">${av}</em><small>${esc(a.name||KIND[a.type])}${a.last4?' · •••• '+esc(a.last4):''}</small></span></label>`}).join(''):''};
- form.innerHTML=`<div class="grab"></div><h3>Pay</h3><div class="per pm" role="group" aria-label="Payment type"><button type="button" data-pm="buy" aria-pressed="true">Purchase</button><button type="button" data-pm="bill" aria-pressed="false">Pay a loan or card</button></div><div class="pick">${grp('savings','From savings')}${grp('credit','With a credit card')}</div>
+  return `<div class="srow"><label class="src"><input type="radio" name="src" value="${esc(a.id)}" ${a===sel?'checked':''}><span class="src-c" style="--c:${okColor(a.color)?a.color:'#2b2d42'}"><i></i><b>${esc(a.bank||'Account')}</b><em class="num">${av}</em><small>${esc(a.name||KIND[a.type])}${a.last4?' · •••• '+esc(a.last4):''}</small></span></label><button type="button" class="gopay" tabindex="-1" aria-label="Pay with ${esc(a.bank||'this account')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Pay</button></div>`}).join(''):''};
+ form.innerHTML=`<div class="grab"></div><h3>Pay</h3><div class="per pm" role="group" aria-label="Payment type"><button type="button" data-pm="buy" aria-pressed="true">Purchase</button><button type="button" data-pm="bill" aria-pressed="false">Pay a loan or card</button></div><p class="hint" style="margin:-6px 2px 12px">Double-tap an account to pay with it.</p><div class="pick">${grp('savings','From savings')}${grp('credit','With a credit card')}</div>
  <div class="f"><label for="payAmt">Purchase amount <span id="payCur" style="font-weight:600"></span></label><input id="payAmt" name="payAmt" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
  <div class="prev" id="payInfo"></div>
  <div class="f"><label for="payNote">What was it for? (optional)</label><input id="payNote" name="payNote" autocomplete="off" maxlength="60" placeholder="Groceries, Lazada order, dinner…"></div>
@@ -586,7 +633,7 @@ function undoTx(id){const i=(S.tx||[]).findIndex(t=>t.id===id);if(i<0)return;con
  else applyTx(t,-1);
  S.tx.splice(i,1);save();render();hideToast()}
 function recentHtml(){const r=(S.tx||[]).slice(0,5);if(!r.length)return '';
- return `<p class="pgh" style="margin-top:20px">Recent payments</p><div class="txl">${r.map(t=>{const d=esc(new Date(t.at).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+ return `<div class="sec" style="margin:20px 2px 8px"><span class="pgh" style="margin:0">Recent payments</span><button type="button" class="lnk" data-hist="1" style="margin:0">See all</button></div><div class="txl">${r.map(t=>{const d=esc(new Date(t.at).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
   if(t.kind==='bill'){const g=S.accounts.find(x=>x.id===t.tgt),sa=S.accounts.find(x=>x.id===t.src);return `<div class="tx"><span><b>Payment to ${esc(g?accLabel(g):'deleted account')}</b><small>${t.src?(sa?'from '+esc(accLabel(sa)):'from a deleted account'):'cash or other account'} · ${d}</small></span><strong class="num">${mo(t.amt,t.cur)}</strong>${g?`<button type="button" data-undo="${esc(t.id)}">Undo</button>`:''}</div>`}
   const a=S.accounts.find(x=>x.id===t.acc);return `<div class="tx"><span><b>${esc(t.note||'Purchase')}</b><small>${esc(a?accLabel(a):'Deleted account')} · ${d}</small></span><strong class="num">${mo(t.amt,t.cur)}</strong>${a?`<button type="button" data-undo="${esc(t.id)}">Undo</button>`:''}</div>`}).join('')}</div>`}
 const billTargets=()=>S.accounts.filter(a=>a.type==='credit'||a.type==='loan');
@@ -638,7 +685,7 @@ function openItem(kind,x){
 }
 form.addEventListener('input',e=>{if(editing==='pay')payPreview();if(editing==='bill')billPreview();if(e.target.id==='cusP'){const r=$('#cusR');r.value=e.target.value;r.checked=true;$('#cusS').style.background=e.target.value}});
 form.addEventListener('change',async e=>{
- if(editing==='pay'&&e.target.name==='src'){payPreview();return}
+ if(editing==='pay'&&e.target.name==='src'){const sr=e.target.closest('.srow');if(!sr||!sr.classList.contains('armed'))armRow(null);payPreview();return}
  if(editing==='bill'){if(e.target.name==='tgt'){const sp=(form.querySelector('[name=bsrc]:checked')||{}).value;openBill(e.target.value,sp??'')}else billPreview();return}
  if(e.target.id!=='impB'||!e.target.files[0])return;const msg=$('#bMsg');
  try{const d=JSON.parse(await e.target.files[0].text());if(!d||!Array.isArray(d.accounts))throw 0;
@@ -646,6 +693,14 @@ form.addEventListener('change',async e=>{
  catch(x){msg.textContent="That file isn't a Vault backup.";msg.style.color='var(--neg)'}
 });
 form.addEventListener('click',e=>{
+ if(editing==='pay'){
+  if(e.target.closest('.gopay')){goPay();return}
+  const sr=e.target.closest('.srow');
+  if(sr&&e.target.tagName!=='INPUT'){const now=Date.now();if(lastTap.el===sr&&now-lastTap.t<450){armRow(sr);lastTap={el:null,t:0}}else lastTap={el:sr,t:now}}
+ }
+ {const b=e.target.closest('button');if(b&&b.dataset.hist){histOpen='';openHistory('all');return}
+  if(b&&b.dataset.hf){histOpen='';openHistory(b.dataset.hf);return}
+  if(b&&b.dataset.tx){histOpen=histOpen===b.dataset.tx?'':b.dataset.tx;const y=form.scrollTop;openHistory();form.scrollTop=y;return}}
  const t=e.target.closest('button');if(!t)return;
  if(t.id==='cancel')closeSheet();
  if(t.id==='addCoin'){$('#coins').insertAdjacentHTML('beforeend',crow({}));$('#coins').lastElementChild.querySelector('input').focus()}
@@ -654,7 +709,7 @@ form.addEventListener('click',e=>{
  if(t.id==='expB'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='vault-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);$('#bMsg').textContent='Backup file saved to your downloads.'}catch(x){$('#bMsg').textContent="Couldn't save a file here."}}
  if(t.dataset.pm){t.dataset.pm==='bill'?openBill():openPay();return}
  if(t.dataset.amt){const i=$('#billAmt');if(t.dataset.amt==='custom'){i.value='';i.focus()}else i.value=t.dataset.amt;billPreview();return}
- if(t.dataset.undo){undoTx(t.dataset.undo);closeSheet();return}
+ if(t.dataset.undo){undoTx(t.dataset.undo);if(editing==='hist'){histOpen='';openHistory()}else closeSheet();return}
  if(t.id==='payWith'){const id=editing&&editing.id;closeSheet();openPay(id);return}
  if(t.id==='markPaid'&&editing!=='flow'&&editing&&editing.id){const id=editing.id;closeSheet();openBill(id);return}
  if(t.id==='markPaid'){const k=editing==='flow'?'expense':editing.type,x=editing==='flow'?flowEdit.x:editing;if(x){closeSheet();markPaid(k,x)}return}
@@ -676,14 +731,14 @@ form.addEventListener('submit',e=>{
   const sa=S.accounts.find(x=>x.id===f.get('bsrc')&&x.type==='savings'),sAmt=sa?r2(amt*rate(g.cur)/rate(sa.cur)):0,adv=!!f.get('adv')&&!!pd(g.dueDate);
   const t={id:uid(),kind:'bill',tgt:g.id,src:sa?sa.id:'',amt,cur:g.cur,srcAmt:sAmt,srcCur:sa?sa.cur:'',adv,prevDue:g.dueDate||'',at:Date.now()};
   g.balance=r2(num(g.balance)-amt);if(sa)sa.balance=r2(num(sa.balance)-sAmt);if(adv)g.dueDate=nextDue(g,g.type);
-  S.tx=[t,...(S.tx||[])].slice(0,100);S.lastBillSrc=sa?sa.id:'';S.sample=false;save();closeSheet();render();
+  S.tx=[t,...(S.tx||[])];S.lastBillSrc=sa?sa.id:'';S.sample=false;save();closeSheet();render();
   showToast(`Paid ${money(amt,g.cur)} to ${g.bank||'account'}`+(sa?` from ${sa.bank||'account'}`:''),t.id);return}
  if(editing==='pay'){
   const a=S.accounts.find(x=>x.id===f.get('src')),amt=Math.round(num(f.get('payAmt'))*100)/100;
   if(!a){payPreview();return}
   if(!(amt>0)){const i=$('#payAmt');i.focus();i.style.borderColor='var(--neg)';return}
   const t={id:uid(),acc:a.id,amt,cur:a.cur,note:String(f.get('payNote')||'').trim().slice(0,60),at:Date.now()};
-  applyTx(t,1);S.tx=[t,...(S.tx||[])].slice(0,100);S.lastSrc=a.id;S.sample=false;save();closeSheet();render();
+  applyTx(t,1);S.tx=[t,...(S.tx||[])];S.lastSrc=a.id;S.sample=false;save();closeSheet();render();
   showToast(`Paid ${money(amt,a.cur)} ${a.type==='credit'?'with':'from'} ${a.bank||'account'}`,t.id);return}
  if(editing==='settings'){S.remind=[1,2,3,5,7].includes(+f.get('remind'))?+f.get('remind'):3;S.currency=CUR.includes(f.get('cur'))?f.get('cur'):'PHP';CUR.forEach(c=>{const v=num(f.get('r_'+c));if(c!=='PHP'&&v>0)S.rates[c]=v});save();closeSheet();render();return}
  if(editing==='flow'){
@@ -707,7 +762,7 @@ form.addEventListener('submit',e=>{
 
 /* ---------- saving ---------- */
 let tmr=0,writing=false,again=false;
-function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}clearTimeout(tmr);tmr=setTimeout(push,500)}
+function save(){pruneTx();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}clearTimeout(tmr);tmr=setTimeout(push,500)}
 async function push(){
  if(!ref)return;if(writing){again=true;return}writing=true;
  try{await ref.set(JSON.parse(JSON.stringify({accounts:S.accounts,income:S.income,expenses:S.expenses,v:S.v,remind:S.remind,tx:S.tx||[],lastSrc:S.lastSrc||'',lastBillSrc:S.lastBillSrc||'',period:S.period,currency:S.currency,rates:S.rates,sample:!!S.sample,flowSample:!!S.flowSample,updated:Date.now()})));syncMsg='Synced to your Claude account · private to you'}
