@@ -138,6 +138,7 @@ button{cursor:pointer}
 .sw span{display:block;width:40px;height:40px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
 .sw input:checked+span{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--ink)}
 .sw input:focus-visible+span{outline:3px solid var(--acc);outline-offset:4px}
+.sw .cus input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
 .crow{display:grid;grid-template-columns:72px minmax(0,1fr) minmax(0,1.2fr) 44px;gap:8px;margin-bottom:8px}
 .crow input{padding:0 10px}
 .x{height:50px;border:0;border-radius:14px;background:var(--soft);font-size:20px;color:var(--mut)}
@@ -231,7 +232,11 @@ const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=v=>{const n=parseFloat(String(v??'').replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0};
 const uid=()=>Math.random().toString(36).slice(2,10);
-const COLORS=['#0f6b57','#b3261e','#2b2d42','#5b2a86','#c4561a','#1f4fd1','#17171a','#8a6a10','#0b6e99','#a3195b'];
+const COLORS=['#0f6b57','#b3261e','#2b2d42','#5b2a86','#c4561a','#1f4fd1','#17171a','#8a6a10','#0b6e99','#a3195b',
+ '#7f1d1d','#be185d','#b76e79','#9333ea','#4338ca','#1e3a8a','#0284c7','#0e7490','#047857','#3f6212',
+ '#b45309','#9a3412','#78350f','#475569','#71717a','#a17f1a','#000000','#334155'];
+const CNAME={'#0f6b57':'Teal','#b3261e':'Red','#2b2d42':'Charcoal','#5b2a86':'Purple','#c4561a':'Orange','#1f4fd1':'Blue','#17171a':'Black','#8a6a10':'Bronze','#0b6e99':'Ocean','#a3195b':'Berry','#7f1d1d':'Burgundy','#be185d':'Pink','#b76e79':'Rose gold','#9333ea':'Violet','#4338ca':'Indigo','#1e3a8a':'Navy','#0284c7':'Sky','#0e7490':'Cyan','#047857':'Emerald','#3f6212':'Olive','#b45309':'Amber','#9a3412':'Rust','#78350f':'Brown','#475569':'Slate','#71717a':'Silver','#a17f1a':'Gold','#000000':'Jet black','#334155':'Graphite'};
+const okColor=c=>/^#[0-9a-f]{6}$/i.test(String(c||''));
 const COINC={BTC:'#f7931a',ETH:'#627eea',SOL:'#9945ff',USDT:'#26a17b',USDC:'#2775ca',XRP:'#23292f',ADA:'#0033ad',DOGE:'#c2a633',BNB:'#d9a40c'};
 const CUR=['PHP','USD','SGD','MYR','IDR','THB','CNY','HKD','JPY','INR','EUR','GBP','AUD','NZD'];
 /* approximate market rates: pesos per 1 unit (Nov 2026). Editable in Settings. */
@@ -316,7 +321,7 @@ $('#lockBtn').onclick=lock;
 /* ---------- render ---------- */
 function coinRow(c,cur){const s=String(c.sym||'?').toUpperCase().slice(0,5);return `<span class="coin"><span class="ci" style="background:${COINC[s]||'#444'}">${esc(s.slice(0,3))}</span><span><b>${esc(s)}</b> <span class="num">${hideBal?'••••':esc(+num(c.qty).toFixed(8))}</span></span><b class="num">${m(num(c.value),cur)}</b></span>`}
 function card(a,i){
- const b=bal(a),k=a.cur,c=COLORS.includes(a.color)?a.color:'#2b2d42',l4=a.last4?` · •••• ${esc(a.last4)}`:'';
+ const b=bal(a),k=a.cur,c=okColor(a.color)?a.color:'#2b2d42',l4=a.last4?` · •••• ${esc(a.last4)}`:'';
  let mid=`<span class="c-mid">${a.type==='crypto'?'':'<span class="chip"></span>'}<span>${esc(a.name)}${l4}</span></span>`,extra='',label='Balance',right='';
  if(a.type==='crypto'){extra=(a.coins||[]).length?`<span class="coins">${a.coins.map(x=>coinRow(x,k)).join('')}</span>`:'';label='Total value';right=`${(a.coins||[]).length} coin${(a.coins||[]).length===1?'':'s'}`}
  if(a.type==='credit'){const lim=num(a.limit),u=lim?Math.min(100,b/lim*100):0;label='Balance owed';right=lim?`${m(Math.max(0,lim-b),k)} available`:'';extra=lim?`<span class="meter" aria-label="${Math.round(u)}% of limit used"><i style="width:${u}%"></i></span>`:''}
@@ -420,7 +425,9 @@ function openEdit(a,type){
  if(t==='credit')h+=`<div class="two">${moneyF('balance','Amount owed',v.balance)}${moneyF('limit','Credit limit',v.limit)}</div>`;
  if(t==='loan')h+=`<div class="two">${moneyF('balance','Remaining',v.balance)}${moneyF('original','Original amount',v.original)}</div><div class="two">${fld('rate','Interest % p.a.',v.rate??'','inputmode="decimal"')}${moneyF('monthly','Monthly payment',v.monthly)}</div>`;
  if(ex)h+=`<p class="flab">Coins held</p><p class="hint">Coin, amount held, and its current value in the currency above.</p><div id="coins">${(v.coins||[]).map(crow).join('')}</div><button type="button" class="lnk" id="addCoin">+ Add coin</button>`;
- h+=`<p class="flab">Card colour</p><div class="sw">${COLORS.map(c=>`<label><input type="radio" name="color" value="${c}" ${c===v.color?'checked':''} aria-label="Colour ${c}"><span style="background:${c}"></span></label>`).join('')}</div>`;
+ {const cus=okColor(v.color)&&!COLORS.includes(v.color),cv=cus?v.color:'#e11d48';
+ h+=`<p class="flab">Card colour</p><div class="sw">${COLORS.map(c=>`<label><input type="radio" name="color" value="${c}" ${c===v.color?'checked':''} aria-label="${CNAME[c]||c}"><span style="background:${c}"></span></label>`).join('')}
+ <label class="cus" title="Custom colour"><input type="radio" name="color" id="cusR" value="${cv}" ${cus?'checked':''} aria-label="Custom colour"><span id="cusS" style="background:${cus?cv:'conic-gradient(#f43f5e,#f59e0b,#84cc16,#06b6d4,#6366f1,#d946ef,#f43f5e)'}"></span><input type="color" id="cusP" value="${cv}" aria-label="Pick a custom colour"></label></div>`}
  h+=`<div class="btns"><button class="pri" type="submit">Save</button><button class="sec2" type="button" id="cancel">Cancel</button>${a?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
  form.innerHTML=h;sheet.hidden=false;form.scrollTop=0;
 }
@@ -446,6 +453,7 @@ function openItem(kind,x){
  h+=`<div class="btns"><button class="pri" type="submit">Save</button><button class="sec2" type="button" id="cancel">Cancel</button>${x?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
  form.innerHTML=h;$('#iname').value=v.name||'';$('#iamt').value=x?num(v.amount):'';sheet.hidden=false;form.scrollTop=0;
 }
+form.addEventListener('input',e=>{if(e.target.id==='cusP'){const r=$('#cusR');r.value=e.target.value;r.checked=true;$('#cusS').style.background=e.target.value}});
 form.addEventListener('change',async e=>{
  if(e.target.id!=='impB'||!e.target.files[0])return;const msg=$('#bMsg');
  try{const d=JSON.parse(await e.target.files[0].text());if(!d||!Array.isArray(d.accounts))throw 0;
@@ -480,7 +488,7 @@ form.addEventListener('submit',e=>{
  const t=f.get('type'),bank=String(f.get('bank')||'').trim();
  if(!bank){const i=$('#bank');i.focus();i.style.borderColor='var(--neg)';return}
  const a=editing||{id:uid(),type:t};
- Object.assign(a,{bank,name:String(f.get('name')||'').trim(),cur:CUR.includes(f.get('acur'))?f.get('acur'):S.currency,color:f.get('color')||COLORS[0]});
+ Object.assign(a,{bank,name:String(f.get('name')||'').trim(),cur:CUR.includes(f.get('acur'))?f.get('acur'):S.currency,color:okColor(f.get('color'))?f.get('color'):COLORS[0]});
  if(t!=='crypto')a.last4=String(f.get('last4')||'').replace(/\D/g,'').slice(0,4);
  if(t!=='crypto')a.balance=num(f.get('balance'));
  if(t==='credit')a.limit=num(f.get('limit'));
