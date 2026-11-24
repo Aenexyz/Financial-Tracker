@@ -59,6 +59,31 @@ button{cursor:pointer}
 .split div{background:var(--soft);border-radius:16px;padding:10px 12px}
 .split span{display:block;font-size:13px;color:var(--mut);font-weight:600}
 .split b{font-size:15px}
+.paybtn{margin-top:12px;width:100%;height:54px;border:0;border-radius:16px;background:var(--acc);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 22px -14px var(--acc)}
+.paybtn:active{transform:scale(.985)}
+.pick{display:grid;gap:8px;margin-bottom:16px}
+.src{position:relative;display:block}
+.src input{position:absolute;opacity:0}
+.src-c{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 14px;border-radius:16px;border:2px solid var(--line);background:var(--soft);cursor:pointer}
+.src-c i{grid-row:span 2;width:14px;height:36px;border-radius:5px;background:var(--c)}
+.src-c b{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-c small{color:var(--mut);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-c em{grid-row:1/span 2;grid-column:3;font-style:normal;text-align:right;font-weight:800;font-size:14px}
+.src-c em small{display:block;font-weight:600}
+.src input:checked+.src-c{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--soft))}
+.src input:focus-visible+.src-c{outline:3px solid var(--acc);outline-offset:2px}
+.pgh{margin:6px 2px 8px;font-size:14px;font-weight:700;color:var(--mut)}
+.prev{margin:-4px 0 14px;padding:12px 14px;border-radius:14px;background:var(--soft);font-size:14px}
+.prev b{font-weight:800}
+.prev.bad{background:color-mix(in srgb,var(--neg) 10%,var(--soft));color:var(--neg)}
+.txl{display:grid;margin-top:18px;border-top:1px solid var(--line)}
+.tx{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tx span{flex:1;min-width:0}.tx b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tx small{color:var(--mut)}
+.tx strong{font-weight:800;white-space:nowrap}
+.tx button{flex:none;height:40px;padding:0 12px;border:0;border-radius:11px;background:var(--soft);font-weight:700;font-size:14px;color:var(--acc)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:35;width:min(480px,calc(100% - 28px));display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px;border-radius:16px;background:var(--ink);color:var(--bg);font-weight:700;font-size:15px;box-shadow:0 12px 30px -12px rgba(0,0,0,.5);animation:rise .25s both}
+.toast span{flex:1;min-width:0}
+.toast button{flex:none;height:40px;padding:0 14px;border:0;border-radius:11px;background:color-mix(in srgb,var(--bg) 18%,transparent);color:var(--bg);font-weight:800}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:6px max(6px,calc((100vw - 540px)/2)) calc(env(safe-area-inset-bottom) + 4px);background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1px solid var(--line)}
 .alerts{margin:4px 0 6px;border-radius:20px;padding:14px 14px 8px;background:color-mix(in srgb,var(--neg) 9%,var(--bg));border:1.5px solid color-mix(in srgb,var(--neg) 35%,transparent);animation:rise .4s both}
 .alerts.soon{background:color-mix(in srgb,var(--warn) 10%,var(--bg));border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
@@ -218,11 +243,13 @@ button{cursor:pointer}
     <p class="lbl">Net worth</p>
     <p class="big num" id="net"></p>
     <div class="split" id="split"></div>
+    <button class="paybtn" id="payBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19M15 15h3"/></svg>Pay</button>
   </div>
   <div id="alerts"></div>
   <div id="sampleNote"></div>
   <section id="view"></section>
   <p class="foot" id="sync"></p>
+  <div class="toast" id="toast" hidden role="status"><span id="toastMsg"></span><button id="toastUndo">Undo</button></div>
   <nav class="tabbar" role="tablist" id="seg">
     <button role="tab" data-tab="savings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>Savings</button>
     <button role="tab" data-tab="credit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19M6 15h4"/></svg>Cards</button>
@@ -373,7 +400,7 @@ function press(k){
 function tryCode(){if(code&&sha256('vault:'+code)===HASH){unlock();return true}return false}
 function fail(){lkMsg.textContent=code?'Wrong passcode — try again':'Enter passcode';lkMsg.className=code?'err':'';dots.classList.remove('shake');void dots.offsetWidth;dots.classList.add('shake');code='';drawDots()}
 function unlock(){code='';drawDots();$('#lock').hidden=true;$('#app').hidden=false;render()}
-function lock(){closeSheet();$('#app').hidden=true;$('#lock').hidden=false;lkMsg.textContent='Enter passcode';lkMsg.className='';code='';drawDots();window.scrollTo(0,0)}
+function lock(){closeSheet();hideToast();$('#app').hidden=true;$('#lock').hidden=false;lkMsg.textContent='Enter passcode';lkMsg.className='';code='';drawDots();window.scrollTo(0,0)}
 $('#pad').addEventListener('click',e=>{const b=e.target.closest('button');if(b)press(b.dataset.k)});
 document.addEventListener('keydown',e=>{if($('#lock').hidden)return;if(/^\d$/.test(e.key))press(e.key);else if(e.key==='Backspace')press('del');else if(e.key==='Enter')press('ok')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)awayAt=Date.now();else if(awayAt&&Date.now()-awayAt>30000)lock()});
@@ -498,7 +525,7 @@ function openEdit(a,type){
  {const cus=okColor(v.color)&&!COLORS.includes(v.color),cv=cus?v.color:'#e11d48';
  h+=`<p class="flab">Card colour</p><div class="sw">${COLORS.map(c=>`<label><input type="radio" name="color" value="${c}" ${c===v.color?'checked':''} aria-label="${CNAME[c]||c}"><span style="background:${c}"></span></label>`).join('')}
  <label class="cus" title="Custom colour"><input type="radio" name="color" id="cusR" value="${cv}" ${cus?'checked':''} aria-label="Custom colour"><span id="cusS" style="background:${cus?cv:'conic-gradient(#f43f5e,#f59e0b,#84cc16,#06b6d4,#6366f1,#d946ef,#f43f5e)'}"></span><input type="color" id="cusP" value="${cv}" aria-label="Pick a custom colour"></label></div>`}
- h+=`<div class="btns"><button class="pri" type="submit">Save</button><button class="sec2" type="button" id="cancel">Cancel</button>${a?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
+ h+=`<div class="btns"><button class="pri" type="submit">Save</button>${a&&(t==='savings'||t==='credit')?'<button class="sec2" type="button" id="payWith">Pay with this '+(t==='credit'?'card':'account')+'</button>':''}<button class="sec2" type="button" id="cancel">Cancel</button>${a?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
  form.innerHTML=h;sheet.hidden=false;form.scrollTop=0;
 }
 const dueField=(v,kind)=>{const st=dueSt(v);return `<div class="f"><label for="due">Next due date (optional)</label><input type="date" id="due" name="due" value="${esc(pd(v.dueDate)?v.dueDate:'')}"></div>${st?`<p class="hint ${st.lvl==='ok'?'':st.lvl}" style="font-weight:700">${esc(st.label)}</p><button type="button" class="sec2" id="markPaid" style="width:100%;margin:-4px 0 16px">Mark this payment as paid</button>`:'<p class="hint">You\'ll get a warning when it\'s almost due or past due.</p>'}`};
@@ -517,6 +544,40 @@ function openSettings(){
  sheet.hidden=false;
 }
 $('#setBtn').onclick=openSettings;
+/* ---------- pay ---------- */
+const paySrc=()=>S.accounts.filter(a=>a.type==='savings'||a.type==='credit');
+const accLabel=a=>(a.bank||'Account')+(a.name?' '+a.name:'');
+function payPreview(){
+ const box=$('#payInfo');if(!box)return;const id=(form.querySelector('[name=src]:checked')||{}).value,a=S.accounts.find(x=>x.id===id),amt=num($('#payAmt').value);
+ if(!a){box.textContent='Choose where to pay from.';box.className='prev';return}
+ $('#payCur').textContent=a.cur+' · '+(SYM[a.cur]||a.cur);
+ const b=num(a.balance);let html,bad=false;
+ if(a.type==='savings'){const nb=b-amt;bad=nb<0;html=`Balance: <b class="num">${mo(b,a.cur)}</b> → <b class="num">${mo(nb,a.cur)}</b>${bad?'<br>This is more than the balance.':''}`}
+ else{const nb=b+amt,lim=num(a.limit);bad=lim>0&&nb>lim;html=`Owed: <b class="num">${mo(b,a.cur)}</b> → <b class="num">${mo(nb,a.cur)}</b>${lim?`<br>${bad?'Over the credit limit by '+mo(nb-lim,a.cur):mo(lim-nb,a.cur)+' still available'}`:''}`}
+ box.innerHTML=amt>0?html:(a.type==='savings'?`Balance: <b class="num">${mo(b,a.cur)}</b>`:`Owed: <b class="num">${mo(b,a.cur)}</b>`);box.className='prev'+(bad&&amt>0?' bad':'');
+}
+function openPay(pre){
+ editing='pay';delArm=false;const src=paySrc();
+ if(!src.length){form.innerHTML=`<div class="grab"></div><h3>Pay</h3><p class="hint" style="font-size:15px">Add a bank account or credit card first, then you can pay from it here.</p><div class="btns"><button class="sec2" type="button" id="cancel">Close</button></div>`;sheet.hidden=false;return}
+ const sel=src.find(a=>a.id===pre)||src.find(a=>a.id===S.lastSrc)||src[0];
+ const grp=(t,h)=>{const l=src.filter(a=>a.type===t);return l.length?`<p class="pgh">${h}</p>`+l.map(a=>{const av=a.type==='credit'&&num(a.limit)?`${mo(num(a.limit)-num(a.balance),a.cur)}<small>available</small>`:a.type==='credit'?`${mo(num(a.balance),a.cur)}<small>owed</small>`:`${mo(num(a.balance),a.cur)}<small>balance</small>`;
+  return `<label class="src"><input type="radio" name="src" value="${esc(a.id)}" ${a===sel?'checked':''}><span class="src-c" style="--c:${okColor(a.color)?a.color:'#2b2d42'}"><i></i><b>${esc(a.bank||'Account')}</b><em class="num">${av}</em><small>${esc(a.name||KIND[a.type])}${a.last4?' · •••• '+esc(a.last4):''}</small></span></label>`}).join(''):''};
+ const recent=(S.tx||[]).slice(0,5);
+ form.innerHTML=`<div class="grab"></div><h3>Pay</h3><div class="pick">${grp('savings','From savings')}${grp('credit','With a credit card')}</div>
+ <div class="f"><label for="payAmt">Purchase amount <span id="payCur" style="font-weight:600"></span></label><input id="payAmt" name="payAmt" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+ <div class="prev" id="payInfo"></div>
+ <div class="f"><label for="payNote">What was it for? (optional)</label><input id="payNote" name="payNote" autocomplete="off" maxlength="60" placeholder="Groceries, Lazada order, dinner…"></div>
+ <div class="btns"><button class="pri" type="submit">Pay</button><button class="sec2" type="button" id="cancel">Cancel</button></div>
+ ${recent.length?`<p class="pgh" style="margin-top:20px">Recent payments</p><div class="txl">${recent.map(t=>{const a=S.accounts.find(x=>x.id===t.acc);return `<div class="tx"><span><b>${esc(t.note||'Payment')}</b><small>${esc(a?accLabel(a):'Deleted account')} · ${esc(new Date(t.at).toLocaleDateString('en-US',{month:'short',day:'numeric'}))}</small></span><strong class="num">${mo(t.amt,t.cur)}</strong>${a?`<button type="button" data-undo="${esc(t.id)}">Undo</button>`:''}</div>`}).join('')}</div>`:''}`;
+ sheet.hidden=false;form.scrollTop=0;payPreview();
+}
+function applyTx(t,sign){const a=S.accounts.find(x=>x.id===t.acc);if(!a)return false;a.balance=Math.round((num(a.balance)+(a.type==='savings'?-1:1)*sign*t.amt)*100)/100;return true}
+function undoTx(id){const i=(S.tx||[]).findIndex(t=>t.id===id);if(i<0)return;const t=S.tx[i];applyTx(t,-1);S.tx.splice(i,1);save();render();hideToast()}
+let toastT=0,toastTx=null;
+function hideToast(){$('#toast').hidden=true;toastTx=null}
+function showToast(msg,txid){$('#toastMsg').textContent=msg;toastTx=txid;$('#toastUndo').hidden=!txid;$('#toast').hidden=false;clearTimeout(toastT);toastT=setTimeout(hideToast,7000)}
+$('#toastUndo').onclick=()=>{if(toastTx)undoTx(toastTx)};
+$('#payBtn').onclick=()=>openPay();
 let flowEdit=null;
 function openItem(kind,x){
  editing='flow';flowEdit={kind,x};delArm=false;const v=x||{freq:kind==='income'?'month':'week',cat:'Food'};
@@ -527,8 +588,9 @@ function openItem(kind,x){
  h+=`<div class="btns"><button class="pri" type="submit">Save</button><button class="sec2" type="button" id="cancel">Cancel</button>${x?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
  form.innerHTML=h;$('#iname').value=v.name||'';$('#iamt').value=x?num(v.amount):'';sheet.hidden=false;form.scrollTop=0;
 }
-form.addEventListener('input',e=>{if(e.target.id==='cusP'){const r=$('#cusR');r.value=e.target.value;r.checked=true;$('#cusS').style.background=e.target.value}});
+form.addEventListener('input',e=>{if(editing==='pay')payPreview();if(e.target.id==='cusP'){const r=$('#cusR');r.value=e.target.value;r.checked=true;$('#cusS').style.background=e.target.value}});
 form.addEventListener('change',async e=>{
+ if(editing==='pay'&&e.target.name==='src'){payPreview();return}
  if(e.target.id!=='impB'||!e.target.files[0])return;const msg=$('#bMsg');
  try{const d=JSON.parse(await e.target.files[0].text());if(!d||!Array.isArray(d.accounts))throw 0;
   S=JSON.parse(JSON.stringify(d));if(!Array.isArray(S.income))S.income=[];if(!Array.isArray(S.expenses))S.expenses=[];S.v=2;ensureFlow();save();closeSheet();render()}
@@ -541,12 +603,14 @@ form.addEventListener('click',e=>{
  if(t.classList.contains('x'))t.parentElement.remove();
  if(t.id==='resetS'){S.accounts=SAMPLE();S.sample=true;S.income=SINC();S.expenses=SEXP();S.flowSample=true;ensureCur();save();closeSheet();render()}
  if(t.id==='expB'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='vault-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);$('#bMsg').textContent='Backup file saved to your downloads.'}catch(x){$('#bMsg').textContent="Couldn't save a file here."}}
+ if(t.dataset.undo){undoTx(t.dataset.undo);closeSheet();return}
+ if(t.id==='payWith'){const id=editing&&editing.id;closeSheet();openPay(id);return}
  if(t.id==='markPaid'){const k=editing==='flow'?'expense':editing.type,x=editing==='flow'?flowEdit.x:editing;if(x){closeSheet();markPaid(k,x)}return}
  if(t.id==='icsB'){exportIcs();return}
  if(t.id==='resetR'){CUR.forEach(c=>{const i=form.querySelector(`[name="r_${c}"]`);if(i)i.value=DEF_RATES[c]})}
  if(t.id==='del'){
   if(!delArm){delArm=true;t.textContent='Tap again to confirm';return}
-  if(editing==='settings'){S.accounts=[];S.income=[];S.expenses=[];S.sample=false;S.flowSample=false}
+  if(editing==='settings'){S.accounts=[];S.income=[];S.expenses=[];S.tx=[];S.sample=false;S.flowSample=false}
   else if(editing==='flow'){const k=flowEdit.kind==='income'?'income':'expenses';S[k]=S[k].filter(x=>x!==flowEdit.x);S.flowSample=false}
   else{S.accounts=S.accounts.filter(x=>x!==editing);S.sample=false}
   save();closeSheet();render();
@@ -554,6 +618,13 @@ form.addEventListener('click',e=>{
 });
 form.addEventListener('submit',e=>{
  e.preventDefault();const f=new FormData(form);
+ if(editing==='pay'){
+  const a=S.accounts.find(x=>x.id===f.get('src')),amt=Math.round(num(f.get('payAmt'))*100)/100;
+  if(!a){payPreview();return}
+  if(!(amt>0)){const i=$('#payAmt');i.focus();i.style.borderColor='var(--neg)';return}
+  const t={id:uid(),acc:a.id,amt,cur:a.cur,note:String(f.get('payNote')||'').trim().slice(0,60),at:Date.now()};
+  applyTx(t,1);S.tx=[t,...(S.tx||[])].slice(0,100);S.lastSrc=a.id;S.sample=false;save();closeSheet();render();
+  showToast(`Paid ${money(amt,a.cur)} ${a.type==='credit'?'with':'from'} ${a.bank||'account'}`,t.id);return}
  if(editing==='settings'){S.remind=[1,2,3,5,7].includes(+f.get('remind'))?+f.get('remind'):3;S.currency=CUR.includes(f.get('cur'))?f.get('cur'):'PHP';CUR.forEach(c=>{const v=num(f.get('r_'+c));if(c!=='PHP'&&v>0)S.rates[c]=v});save();closeSheet();render();return}
  if(editing==='flow'){
   const name=String(f.get('iname')||'').trim();if(!name){const i=$('#iname');i.focus();i.style.borderColor='var(--neg)';return}
@@ -579,7 +650,7 @@ let tmr=0,writing=false,again=false;
 function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}clearTimeout(tmr);tmr=setTimeout(push,500)}
 async function push(){
  if(!ref)return;if(writing){again=true;return}writing=true;
- try{await ref.set(JSON.parse(JSON.stringify({accounts:S.accounts,income:S.income,expenses:S.expenses,v:S.v,remind:S.remind,period:S.period,currency:S.currency,rates:S.rates,sample:!!S.sample,flowSample:!!S.flowSample,updated:Date.now()})));syncMsg='Synced to your Claude account · private to you'}
+ try{await ref.set(JSON.parse(JSON.stringify({accounts:S.accounts,income:S.income,expenses:S.expenses,v:S.v,remind:S.remind,tx:S.tx||[],lastSrc:S.lastSrc||'',period:S.period,currency:S.currency,rates:S.rates,sample:!!S.sample,flowSample:!!S.flowSample,updated:Date.now()})));syncMsg='Synced to your Claude account · private to you'}
  catch(e){syncMsg='Saved on this device only — sync unavailable'}
  writing=false;if(again){again=false;push()}else if(!$('#app').hidden)$('#sync').textContent=syncMsg;
 }
@@ -590,7 +661,7 @@ async function push(){
   const id=await user.id();if(!id)return;
   ref=db.doc('data/users/'+id+'/vault');
   const snap=await ref.get(),d=snap.exists?snap.data():null;
-  if(d&&Array.isArray(d.accounts)){S=JSON.parse(JSON.stringify({accounts:d.accounts,income:d.income,expenses:d.expenses,period:d.period,rates:d.rates,v:d.v,remind:d.remind,currency:CUR.includes(d.currency)?d.currency:'PHP',sample:!!d.sample,flowSample:!!d.flowSample}));ensureFlow();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}syncMsg='Synced to your Claude account · private to you'}
+  if(d&&Array.isArray(d.accounts)){S=JSON.parse(JSON.stringify({accounts:d.accounts,income:d.income,expenses:d.expenses,period:d.period,rates:d.rates,v:d.v,remind:d.remind,tx:Array.isArray(d.tx)?d.tx:[],lastSrc:d.lastSrc||'',currency:CUR.includes(d.currency)?d.currency:'PHP',sample:!!d.sample,flowSample:!!d.flowSample}));ensureFlow();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}syncMsg='Synced to your Claude account · private to you'}
   else if(!S.sample)push();
   else syncMsg='Sync ready — your edits will be saved to your Claude account';
   if(!$('#app').hidden)render();
