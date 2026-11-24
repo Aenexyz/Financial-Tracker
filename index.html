@@ -72,7 +72,7 @@ button{cursor:pointer}
 .wi{width:20px;height:20px;flex:none;vertical-align:-4px}
 .past{color:var(--neg)}.soon{color:var(--warn)}
 .row.r-past{background:color-mix(in srgb,var(--neg) 8%,transparent)}
-.rt b .wi{width:17px;height:17px;margin-left:5px;vertical-align:-3px}
+.rt b .wi{width:17px;height:17px;margin-left:5px;flex:none}
 .rt small.past,.rt small.soon{font-weight:700}.rt small.past{color:var(--neg)}.rt small.soon{color:var(--warn)}
 .duechip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;padding:4px 9px 4px 7px;border-radius:99px;white-space:nowrap;background:#fff;color:#b42318}
 .duechip.soon{color:#92400e;background:#fde68a}
@@ -105,7 +105,7 @@ button{cursor:pointer}
 .row{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:12px 16px;border:0;border-top:1px solid var(--line);background:none;text-align:left}
 .group>.row:first-child{border-top:0}
 .ri{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;flex:none;color:#fff;font-weight:800;font-size:15px}
-.rt{flex:1;min-width:0}.rt b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rt small{color:var(--mut);font-size:13px}
+.rt{flex:1;min-width:0}.rt b{display:flex;align-items:center;font-weight:700;min-width:0}.rt b .tn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.rt small{color:var(--mut);font-size:13px}
 .ra{text-align:right;font-weight:800}.ra small{display:block;color:var(--mut);font-weight:600;font-size:13px}
 .chev{color:var(--mut);font-size:20px;margin-left:-4px}
 .addrow{justify-content:center;color:var(--acc);font-weight:800;min-height:56px}
@@ -275,13 +275,13 @@ const SAMPLE=()=>[
  {id:uid(),type:'savings',bank:'Wise',name:'USD balance',last4:'6604',balance:3200,cur:'USD',color:'#0f6b57'},
  {id:uid(),type:'crypto',bank:'Coins.ph',name:'Main wallet',color:'#0b6e99',coins:[{sym:'BTC',qty:0.12,value:708000},{sym:'ETH',qty:1.5,value:341100}]},
  {id:uid(),type:'crypto',bank:'Binance',name:'Spot wallet',color:'#8a6a10',coins:[{sym:'SOL',qty:25,value:272400},{sym:'USDT',qty:1500,value:91200}]},
- {id:uid(),type:'credit',bank:'BPI',name:'Rewards Card',last4:'5512',balance:18450.75,limit:150000,color:'#2b2d42'},
- {id:uid(),type:'credit',bank:'Metrobank',name:'Titanium Mastercard',last4:'3390',balance:7820,limit:80000,color:'#17171a'},
+ {id:uid(),type:'credit',bank:'BPI',name:'Rewards Card',last4:'5512',balance:18450.75,limit:150000,minDue:850,dueDate:dIn(6),color:'#2b2d42'},
+ {id:uid(),type:'credit',bank:'Metrobank',name:'Titanium Mastercard',last4:'3390',balance:7820,limit:80000,minDue:500,dueDate:dIn(2),color:'#17171a'},
  {id:uid(),type:'loan',bank:'Pag-IBIG',name:'Housing loan',last4:'2045',balance:1240000,original:2000000,rate:6.25,monthly:14800,dueDate:dIn(3),color:'#0f6b57'},
  {id:uid(),type:'loan',bank:'BDO',name:'Auto loan',last4:'8816',balance:385000,original:850000,rate:8.5,monthly:4360,payFreq:'week',dueDate:dIn(5),color:'#5b2a86'}];
 
 const FREQ={week:['Weekly',1],fortnight:['Every 2 weeks',.5],month:['Monthly',12/52],quarter:['Quarterly',4/52],year:['Yearly',1/52]};
-const CATS={Housing:'#c4561a',Food:'#b3261e',Transport:'#1f4fd1',Utilities:'#0b6e99',Subscriptions:'#5b2a86',Insurance:'#2b2d42',Health:'#0f6b57',Family:'#a3195b',Shopping:'#8a6a10',Other:'#6b6b70'};
+const CATS={Housing:'#c4561a',Food:'#b3261e',Transport:'#1f4fd1',Utilities:'#0b6e99',Subscriptions:'#5b2a86',Insurance:'#2b2d42',Health:'#0f6b57',Family:'#a3195b',Shopping:'#8a6a10','Credit cards':'#334155',Other:'#6b6b70'};
 const SINC=()=>[{id:uid(),name:'Salary',amount:120000,freq:'month'},{id:uid(),name:'Freelance design',amount:6500,freq:'week'}];
 const SEXP=()=>[
  {id:uid(),name:'Rent',cat:'Housing',amount:25000,freq:'month',dueDate:dIn(-2)},
@@ -306,6 +306,7 @@ function ensureCur(){
   if(S.sample)S.accounts=SAMPLE();else S.accounts.forEach(x=>{if(!x.cur||x.cur==='SGD')x.cur='PHP'});
   if(S.flowSample){S.income=SINC();S.expenses=SEXP()}else[...S.income,...S.expenses].forEach(x=>{if(!x.cur||x.cur==='SGD')x.cur='PHP'})}
  if(S.v===2){S.v=3;if(S.sample)S.accounts=SAMPLE();if(S.flowSample){S.income=SINC();S.expenses=SEXP()}}
+ if(S.v===3){S.v=4;if(S.sample)S.accounts=SAMPLE()}
  if(![1,2,3,5,7].includes(S.remind))S.remind=3;
  if(!CUR.includes(S.currency))S.currency='PHP';const r={...DEF_RATES};if(S.rates&&typeof S.rates==='object')for(const c of CUR)if(num(S.rates[c])>0)r[c]=num(S.rates[c]);r.PHP=1;S.rates=r;
  [...S.accounts,...S.income,...S.expenses].forEach(x=>{if(!CUR.includes(x.cur))x.cur=S.currency})}
@@ -321,8 +322,8 @@ function icsEsc(t){return String(t).replace(/[\\;,]/g,c=>'\\'+c).replace(/\n/g,'
 function exportIcs(){
  const rs=$('#remind'),RD=rs&&[1,2,3,5,7].includes(+rs.value)?+rs.value:S.remind;
  const RR={week:'FREQ=WEEKLY',fortnight:'FREQ=WEEKLY;INTERVAL=2',month:'FREQ=MONTHLY',quarter:'FREQ=MONTHLY;INTERVAL=3',year:'FREQ=YEARLY'};
- const items=[...of('loan').filter(a=>pd(a.dueDate)).map(a=>({x:a,kind:'loan',name:(a.bank?a.bank+' ':'')+(a.name||'loan'),amt:money(num(a.monthly),a.cur)})),...S.expenses.filter(x=>pd(x.dueDate)).map(x=>({x,kind:'expense',name:x.name||'Expense',amt:money(num(x.amount),x.cur)}))];
- const msg=$('#icsMsg');if(!items.length){msg.textContent='Add a due date to a loan or expense first.';return}
+ const items=[...of('loan').filter(a=>pd(a.dueDate)).map(a=>({x:a,kind:'loan',name:(a.bank?a.bank+' ':'')+(a.name||'loan'),amt:money(num(a.monthly),a.cur)})),...of('credit').filter(a=>pd(a.dueDate)).map(a=>({x:a,kind:'credit',name:(a.bank?a.bank+' ':'')+(a.name||'card'),amt:money(num(a.minDue)||num(a.balance),a.cur)})),...S.expenses.filter(x=>pd(x.dueDate)).map(x=>({x,kind:'expense',name:x.name||'Expense',amt:money(num(x.amount),x.cur)}))];
+ const msg=$('#icsMsg');if(!items.length){msg.textContent='Add a due date to a loan, credit card or expense first.';return}
  const now=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
  const ev=items.map(({x,kind,name,amt})=>{const d=x.dueDate.replace(/-/g,''),e=ymd(new Date(pd(x.dueDate).getTime()+864e5)).replace(/-/g,'');return ['BEGIN:VEVENT','UID:vault-'+x.id+'@vault','DTSTAMP:'+now,'DTSTART;VALUE=DATE:'+d,'DTEND;VALUE=DATE:'+e,'RRULE:'+RR[freqOf(x,kind)],'SUMMARY:'+icsEsc('Due: '+name+' '+amt),'DESCRIPTION:'+icsEsc('Vault reminder'),
   'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(name+' is due in '+RD+' day'+(RD>1?'s':'')),'TRIGGER:'+(RD>1?'-P'+(RD-1)+'DT15H':'-PT15H'),'END:VALARM',
@@ -330,7 +331,7 @@ function exportIcs(){
  const txt=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Vault//Due dates//EN','CALSCALE:GREGORIAN',...ev,'END:VCALENDAR'].join('\r\n');
  try{const u=URL.createObjectURL(new Blob([txt],{type:'text/calendar'})),a=document.createElement('a');a.href=u;a.download='vault-due-dates.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent=`${items.length} due date${items.length>1?'s':''} saved. Open the file and tap Add All.`}
  catch(e){msg.textContent="Couldn't create the calendar file here."}}
-const freqOf=(x,kind)=>kind==='loan'?(LFREQ[x.payFreq]?x.payFreq:'month'):(FREQ[x.freq]?x.freq:'month');
+const freqOf=(x,kind)=>kind==='loan'?(LFREQ[x.payFreq]?x.payFreq:'month'):kind==='credit'?'month':(FREQ[x.freq]?x.freq:'month');
 function dueSt(x){const d=pd(x.dueDate);if(!d)return null;const t=new Date(),t0=new Date(t.getFullYear(),t.getMonth(),t.getDate());const n=Math.round((d-t0)/864e5);
  const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
  if(n<0)return{n,lvl:'past',label:`Past due · ${-n} day${n===-1?'':'s'} (${ds})`,short:'Past due'};
@@ -342,8 +343,9 @@ function nextDue(x,kind){const d=pd(x.dueDate);if(!d)return x.dueDate;const f=fr
  if(f==='fortnight')return ymd(new Date(d.getFullYear(),d.getMonth(),d.getDate()+14));
  const nm=d.getMonth()+({month:1,quarter:3,year:12}[f]||1),last=new Date(d.getFullYear(),nm+1,0).getDate();return ymd(new Date(d.getFullYear(),nm,Math.min(day,last)))}
 function dueList(){const l=[];of('loan').forEach(a=>{const st=dueSt(a);if(st&&st.lvl!=='ok')l.push({kind:'loan',x:a,st,name:(a.bank?a.bank+' ':'')+(a.name||'loan'),amt:m(num(a.monthly),a.cur)})});
+ of('credit').forEach(a=>{const st=dueSt(a);if(st&&st.lvl!=='ok')l.push({kind:'credit',x:a,st,name:(a.bank?a.bank+' ':'')+(a.name||'card'),amt:(num(a.minDue)?'min ':'')+m(num(a.minDue)||num(a.balance),a.cur)})});
  S.expenses.forEach(x=>{const st=dueSt(x);if(st&&st.lvl!=='ok')l.push({kind:'expense',x,st,name:x.name||'Expense',amt:m(num(x.amount),x.cur)})});return l.sort((a,b)=>a.st.n-b.st.n)}
-function markPaid(kind,x){x.dueDate=nextDue(x,kind);if(kind==='loan')S.sample=false;else S.flowSample=false;save();render()}
+function markPaid(kind,x){x.dueDate=nextDue(x,kind);if(kind!=='expense')S.sample=false;else S.flowSample=false;save();render()}
 const loanWk=a=>conv(num(a.monthly),a.cur)*(FREQ[LFREQ[a.payFreq]?a.payFreq:'month'][1]);
 const P=w=>S.period==='month'?w*52/12:w;
 const PS=()=>S.period==='month'?'/mo':'/wk';
@@ -383,9 +385,9 @@ function card(a,i){
  const b=bal(a),k=a.cur,c=okColor(a.color)?a.color:'#2b2d42',l4=a.last4?` · •••• ${esc(a.last4)}`:'';
  let mid=`<span class="c-mid">${a.type==='crypto'?'':'<span class="chip"></span>'}<span>${esc(a.name)}${l4}</span></span>`,extra='',label='Balance',right='';
  if(a.type==='crypto'){extra=(a.coins||[]).length?`<span class="coins">${a.coins.map(x=>coinRow(x,k)).join('')}</span>`:'';label='Total value';right=`${(a.coins||[]).length} coin${(a.coins||[]).length===1?'':'s'}`}
- if(a.type==='credit'){const lim=num(a.limit),u=lim?Math.min(100,b/lim*100):0;label='Balance owed';right=lim?`${m(Math.max(0,lim-b),k)} available`:'';extra=lim?`<span class="meter" aria-label="${Math.round(u)}% of limit used"><i style="width:${u}%"></i></span>`:''}
+ if(a.type==='credit'){const lim=num(a.limit),u=lim?Math.min(100,b/lim*100):0;label='Balance owed';const cst=dueSt(a);right=[lim?`${m(Math.max(0,lim-b),k)} available`:'',num(a.minDue)?`Min due ${m(num(a.minDue),k)}`:'',cst&&cst.lvl==='ok'?esc(cst.label):''].filter(Boolean).join('<br>');extra=lim?`<span class="meter" aria-label="${Math.round(u)}% of limit used"><i style="width:${u}%"></i></span>`:''}
  if(a.type==='loan'){const o=num(a.original),p=o?Math.max(0,Math.min(100,(o-b)/o*100)):0;label='Remaining';right=[a.monthly?`${m(num(a.monthly),k)}${(LFREQ[a.payFreq]||LFREQ.month)[1]}`:'',a.rate?`${esc(num(a.rate))}% p.a.`:'',(()=>{const st=dueSt(a);return st&&st.lvl==='ok'?esc(st.label):''})()].filter(Boolean).join('<br>');extra=o?`<span class="meter" aria-label="${Math.round(p)}% paid off"><i style="width:${p}%"></i></span>`:''}
- return `<button class="card" data-id="${esc(a.id)}" style="--c:${c};animation-delay:${i*45}ms"><span class="c-top"><span class="bank">${esc(a.bank||'Untitled')}</span><span class="c-tags">${(()=>{const st=a.type==='loan'&&dueSt(a);return st&&st.lvl!=='ok'?`<span class="duechip ${st.lvl}">${WARN}${esc(st.short)}</span>`:''})()}<span class="kind">${KIND[a.type]}${k!==S.currency?' · '+esc(k):''}</span></span></span>${mid}${extra}<span class="c-bal"><span><small>${label}</small><strong class="num">${m(b,k)}</strong>${k!==S.currency?`<small class="num">${mo(b,k)} in ${esc(k)}</small>`:''}</span><em class="num">${right}</em></span></button>`;
+ return `<button class="card" data-id="${esc(a.id)}" style="--c:${c};animation-delay:${i*45}ms"><span class="c-top"><span class="bank">${esc(a.bank||'Untitled')}</span><span class="c-tags">${(()=>{const st=(a.type==='loan'||a.type==='credit')&&dueSt(a);return st&&st.lvl!=='ok'?`<span class="duechip ${st.lvl}">${WARN}${esc(st.short)}</span>`:''})()}<span class="kind">${KIND[a.type]}${k!==S.currency?' · '+esc(k):''}</span></span></span>${mid}${extra}<span class="c-bal"><span><small>${label}</small><strong class="num">${m(b,k)}</strong>${k!==S.currency?`<small class="num">${mo(b,k)} in ${esc(k)}</small>`:''}</span><em class="num">${right}</em></span></button>`;
 }
 const list=(l,t)=>`<div class="list">${l.length?l.map(card).join(''):`<div class="empty">No ${t} yet.</div>`}</div>`;
 const sec=(h,v)=>`<div class="sec"><h2>${h}</h2><span class="num">${v}</span></div>`;
@@ -398,8 +400,8 @@ function render(){
  document.querySelectorAll('#seg button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
  const dl=dueList(),past=dl.filter(d=>d.st.lvl==='past').length;
  $('#alerts').innerHTML=dl.length?`<div class="alerts${past?'':' soon'}" role="status"><p class="al-h ${past?'past':'soon'}">${WARN}<span>${past?`${past} past due`+(dl.length>past?` · ${dl.length-past} due soon`:''):`${dl.length} due soon`}</span></p>${dl.map(d=>`<div class="al-row"><button class="al-main" data-open="${d.kind}" data-oid="${esc(d.x.id)}"><span class="${d.st.lvl}">${WARN}</span><span style="min-width:0"><b>${esc(d.name)}</b><small class="${d.st.lvl}">${esc(d.st.label)}</small> <small style="color:var(--mut)" class="num">· ${d.amt}</small></span></button><button class="paid" data-paid="${d.kind}" data-pid="${esc(d.x.id)}">Paid</button></div>`).join('')}</div>`:'';
- const cnt=k=>dl.filter(d=>d.kind===k).length;
- [['loans','loan'],['expenses','expense']].forEach(([t,k])=>{const b=document.querySelector(`#seg [data-tab=${t}]`);let e=b.querySelector('.badge');const n=cnt(k);if(n){if(!e){e=document.createElement('i');e.className='badge';b.appendChild(e)}e.textContent=n}else if(e)e.remove()});
+ const cnt=ks=>dl.filter(d=>ks.includes(d.kind)).length;
+ [['credit',['credit']],['loans',['loan']],['expenses',['expense','credit']]].forEach(([t,k])=>{const b=document.querySelector(`#seg [data-tab=${t}]`);let e=b.querySelector('.badge');const n=cnt(k);if(n){if(!e){e=document.createElement('i');e.className='badge';b.appendChild(e)}e.textContent=n}else if(e)e.remove()});
  $('#eye').setAttribute('aria-label',hideBal?'Show balances':'Hide balances');
  let h='';
  if(tab==='savings'){
@@ -407,7 +409,8 @@ function render(){
    +sec('Crypto',m(cx))+`<p class="sub">Grouped by exchange. Values are what you enter — prices don't update live.</p>`+list(of('crypto'),'exchanges')+addB('crypto','Add exchange');
  }else if(tab==='credit'){
   const lim=of('credit').reduce((s,a)=>s+conv(num(a.limit),a.cur),0);
-  h=sec('Credit cards',m(cr))+(lim?`<p class="sub">${Math.round(cr/lim*100)}% of ${m(lim)} total limit used</p>`:'')+list(of('credit'),'credit cards')+addB('credit','Add credit card');
+  const md=of('credit').reduce((s,a)=>s+conv(num(a.minDue),a.cur),0);
+  h=sec('Credit cards',m(cr))+(lim||md?`<p class="sub">${[lim?`${Math.round(cr/lim*100)}% of ${m(lim)} total limit used`:'',md?`${m(md)} minimum due`:''].filter(Boolean).join(' · ')}</p>`:'')+list(of('credit'),'credit cards')+addB('credit','Add credit card');
  }else if(tab==='loans'){
   const wk=of('loan').reduce((s,a)=>s+loanWk(a),0);
   h=sec('Loans',m(ln))+(wk?`<p class="sub">Repayments: ${m(wk*52/12)} a month · ${m(wk)} a week</p>`:'')+list(of('loan'),'loans')+addB('loan','Add loan');
@@ -423,10 +426,12 @@ function render(){
 const perToggle=()=>`<div class="per" role="group" aria-label="Period"><button data-per="week" aria-pressed="${S.period==='week'}">Weekly</button><button data-per="month" aria-pressed="${S.period==='month'}">Monthly</button></div>`;
 const head=t=>`<div class="sec"><h2>${t}</h2>${perToggle()}</div>`;
 const itemRow=(x,kind)=>{const col=kind==='income'?'#0a7a4d':(CATS[x.cat]||CATS.Other),f=(FREQ[x.freq]||FREQ.month)[0].toLowerCase(),st=kind==='expense'&&dueSt(x),bad=st&&st.lvl!=='ok';
- return `<button class="row${st&&st.lvl==='past'?' r-past':''}" data-item="${esc(x.id)}" data-kind="${kind}"><span class="ri" style="background:${col}">${esc((x.name||'?').trim().charAt(0).toUpperCase())}</span><span class="rt"><b class="${bad?st.lvl:''}">${esc(x.name||'Untitled')}${bad?WARN:''}</b><small class="num">${m(num(x.amount),x.cur)} ${esc(f)}${x.cur!==S.currency?' · '+mo(num(x.amount),x.cur):''}</small>${st?`<small class="${st.lvl==='ok'?'':st.lvl}" style="display:block">${esc(st.label)}</small>`:''}</span><span class="ra num">${m(P(perWeekM(x)))}<small>${PS()}</small></span></button>`};
-const byCat=()=>{const o={};S.expenses.forEach(x=>{const c=CATS[x.cat]?x.cat:'Other';(o[c]=o[c]||[]).push(x)});return Object.entries(o).map(([c,l])=>[c,l,l.reduce((s,x)=>s+perWeekM(x),0)]).sort((a,b)=>b[2]-a[2])};
+ return `<button class="row${st&&st.lvl==='past'?' r-past':''}" data-item="${esc(x.id)}" data-kind="${x.cc?'cc':kind}"><span class="ri" style="background:${col}">${esc((x.name||'?').trim().charAt(0).toUpperCase())}</span><span class="rt"><b class="${bad?st.lvl:''}"><span class="tn">${esc(x.name||'Untitled')}</span>${bad?WARN:''}</b><small class="num">${m(num(x.amount),x.cur)} ${esc(f)}${x.cur!==S.currency?' · '+mo(num(x.amount),x.cur):''}${x.cc?' · minimum due':''}</small>${st?`<small class="${st.lvl==='ok'?'':st.lvl}" style="display:block">${esc(st.label)}</small>`:''}</span><span class="ra num">${m(P(perWeekM(x)))}<small>${PS()}</small></span></button>`};
+const ccExp=()=>of('credit').filter(a=>num(a.minDue)>0).map(a=>({id:a.id,name:(a.bank?a.bank+' ':'')+(a.name||'card'),cat:'Credit cards',amount:num(a.minDue),freq:'month',cur:a.cur,dueDate:a.dueDate,cc:true}));
+const allExp=()=>[...S.expenses,...ccExp()];
+const byCat=()=>{const o={};allExp().forEach(x=>{const c=CATS[x.cat]?x.cat:'Other';(o[c]=o[c]||[]).push(x)});return Object.entries(o).map(([c,l])=>[c,l,l.reduce((s,x)=>s+perWeekM(x),0)]).sort((a,b)=>b[2]-a[2])};
 function renderCashflow(){
- const inc=S.income.reduce((s,x)=>s+perWeekM(x),0),exp=S.expenses.reduce((s,x)=>s+perWeekM(x),0);
+ const inc=S.income.reduce((s,x)=>s+perWeekM(x),0),exp=allExp().reduce((s,x)=>s+perWeekM(x),0);
  const lnW=of('loan').reduce((s,a)=>s+loanWk(a),0),out=exp+lnW,left=inc-out,base=Math.max(inc,out)||1;
  const pct=v=>inc?Math.round(v/inc*100)+'%':'—';
  const segs=[['Expenses','#ff4d2e',exp],['Loan repayments','#5b2a86',lnW],['Left over','var(--pos)',Math.max(0,left)]];
@@ -438,16 +443,16 @@ function renderCashflow(){
   ${segs.map(s=>`<div class="lg"><i style="background:${s[1]}"></i><span>${s[0]}</span><b class="num">${m(P(s[0]==='Left over'?left:s[2]))}</b><em class="num">${pct(s[0]==='Left over'?left:s[2])}</em></div>`).join('')}</div>`;
  h+=`<div class="sec"><h2>Income</h2><span class="num">${m(P(inc))}${PS()}</span></div><div class="group">${S.income.map(x=>itemRow(x,'income')).join('')}<button class="row addrow" data-additem="income">+ Add income</button></div>`;
  h+=`<div class="sec"><h2>Money out</h2><span class="num">${m(P(out))}${PS()}</span></div><div class="group">
-  <button class="row" data-go="expenses"><span class="ri" style="background:#ff4d2e">E</span><span class="rt"><b>Expenses</b><small>${S.expenses.length} item${S.expenses.length===1?'':'s'} · see Expenses tab</small></span><span class="ra num">${m(P(exp))}<small>${PS()}</small></span><span class="chev">›</span></button>
+  <button class="row" data-go="expenses"><span class="ri" style="background:#ff4d2e">E</span><span class="rt"><b>Expenses</b><small>${allExp().length} item${allExp().length===1?'':'s'} · see Expenses tab</small></span><span class="ra num">${m(P(exp))}<small>${PS()}</small></span><span class="chev">›</span></button>
   <button class="row" data-go="loans"><span class="ri" style="background:#5b2a86">L</span><span class="rt"><b>Loan repayments</b><small>${of('loan').length} loan${of('loan').length===1?'':'s'} · from Loans tab</small></span><span class="ra num">${m(P(lnW))}<small>${PS()}</small></span><span class="chev">›</span></button></div>`;
  h+=`<div class="sec"><h2>At this pace</h2></div><div class="tiles"><div><span>Per week</span><b class="num ${left<0?'neg':''}">${m(left)}</b></div><div><span>Per month</span><b class="num ${left<0?'neg':''}">${m(left*52/12)}</b></div><div><span>Per year</span><b class="num ${left<0?'neg':''}">${m(left*52)}</b></div></div>`;
  return h;
 }
 function renderExpenses(){
- const exp=S.expenses.reduce((s,x)=>s+perWeekM(x),0),cats=byCat();
+ const exp=allExp().reduce((s,x)=>s+perWeekM(x),0),cats=byCat();
  let h=head('Expenses');
  h+=`<div class="sum"><p class="lbl">Spending each ${S.period==='month'?'month':'week'}</p><p class="big2 num">${m(P(exp))}</p>
-  <p class="sub">${cats.length?`${S.expenses.length} expenses · ${esc(cats[0][0])} is the biggest`:'No expenses yet.'}</p>
+  <p class="sub">${cats.length?`${allExp().length} expenses · ${esc(cats[0][0])} is the biggest`:'No expenses yet.'}</p>
   <div style="margin-top:12px">${cats.map(([c,,w])=>`<div class="cat"><span>${esc(c)}</span><span class="num">${m(P(w))} <span style="color:var(--mut);font-weight:600">${Math.round(w/exp*100)}%</span></span><span class="mt"><i style="width:${w/exp*100}%;background:${CATS[c]}"></i></span></div>`).join('')}</div></div>`;
  h+=cats.map(([c,l,w])=>`<p class="gh"><span>${esc(c)}</span><span class="num">${m(P(w))}${PS()}</span></p><div class="group">${l.sort((a,b)=>perWeekM(b)-perWeekM(a)).map(x=>itemRow(x,'expense')).join('')}</div>`).join('');
  h+=`<div class="list" style="margin-top:16px"><button class="add" data-additem="expense">+ Add expense</button></div>`;
@@ -460,12 +465,12 @@ $('#app').addEventListener('click',e=>{
  if(e.target.closest('#seg'))return;
  const c=e.target.closest('.card');if(c)return openEdit(S.accounts.find(a=>a.id===c.dataset.id));
  const a=e.target.closest('[data-add]');if(a)return openEdit(null,a.dataset.add);
- const it=e.target.closest('[data-item]');if(it){const k=it.dataset.kind;return openItem(k,(k==='income'?S.income:S.expenses).find(x=>x.id===it.dataset.item))}
+ const it=e.target.closest('[data-item]');if(it){const k=it.dataset.kind;if(k==='cc')return openEdit(S.accounts.find(a=>a.id===it.dataset.item));return openItem(k,(k==='income'?S.income:S.expenses).find(x=>x.id===it.dataset.item))}
  const ai=e.target.closest('[data-additem]');if(ai)return openItem(ai.dataset.additem,null);
  const pr=e.target.closest('[data-per]');if(pr){S.period=pr.dataset.per;save();render();return}
  const g=e.target.closest('[data-go]');if(g)return go(g.dataset.go);
- const pdb=e.target.closest('[data-paid]');if(pdb){const k=pdb.dataset.paid,x=(k==='loan'?S.accounts:S.expenses).find(y=>y.id===pdb.dataset.pid);if(x)markPaid(k,x);return}
- const op=e.target.closest('[data-open]');if(op){const k=op.dataset.open;return k==='loan'?openEdit(S.accounts.find(y=>y.id===op.dataset.oid)):openItem('expense',S.expenses.find(y=>y.id===op.dataset.oid))}
+ const pdb=e.target.closest('[data-paid]');if(pdb){const k=pdb.dataset.paid,x=(k==='expense'?S.expenses:S.accounts).find(y=>y.id===pdb.dataset.pid);if(x)markPaid(k,x);return}
+ const op=e.target.closest('[data-open]');if(op){const k=op.dataset.open;return k!=='expense'?openEdit(S.accounts.find(y=>y.id===op.dataset.oid)):openItem('expense',S.expenses.find(y=>y.id===op.dataset.oid))}
  if(e.target.id==='clearS'){S.accounts=[];S.sample=false;save();render()}
  if(e.target.id==='clearF'){S.income=[];S.expenses=[];S.flowSample=false;save();render()}
 });
@@ -487,7 +492,7 @@ function openEdit(a,type){
  if(!ex)h+=fld('last4','Last 4 digits (optional)',v.last4||'','inputmode="numeric" maxlength="4" autocomplete="off"');
  h+=curField('acur',v.cur||S.currency);
  if(t==='savings')h+=moneyF('balance','Balance',v.balance);
- if(t==='credit')h+=`<div class="two">${moneyF('balance','Amount owed',v.balance)}${moneyF('limit','Credit limit',v.limit)}</div>`;
+ if(t==='credit')h+=`<div class="two">${moneyF('balance','Amount owed',v.balance)}${moneyF('limit','Credit limit',v.limit)}</div>${moneyF('minDue','Minimum amount due',v.minDue)}<p class="hint" style="margin-top:-8px">Shows in Expenses as a monthly bill under Credit cards.</p>${dueField(v,'credit')}`;
  if(t==='loan')h+=`<div class="two">${moneyF('balance','Remaining',v.balance)}${moneyF('original','Original amount',v.original)}</div><div class="two">${fld('rate','Interest % p.a.',v.rate??'','inputmode="decimal"')}${moneyF('monthly','Payment amount',v.monthly)}</div><div class="f"><label for="payFreq">Payment due</label><select id="payFreq" name="payFreq">${Object.entries(LFREQ).map(([k2,[l]])=>`<option value="${k2}" ${k2===(v.payFreq||'month')?'selected':''}>${l}</option>`).join('')}</select></div>${dueField(v,'loan')}`;
  if(ex)h+=`<p class="flab">Coins held</p><p class="hint">Coin, amount held, and its current value in the currency above.</p><div id="coins">${(v.coins||[]).map(crow).join('')}</div><button type="button" class="lnk" id="addCoin">+ Add coin</button>`;
  {const cus=okColor(v.color)&&!COLORS.includes(v.color),cv=cus?v.color:'#e11d48';
@@ -518,7 +523,7 @@ function openItem(kind,x){
  let h=`<div class="grab"></div><h3>${x?'Edit':'New'} ${kind==='income'?'income':'expense'}</h3>`;
  h+=fld('iname',kind==='income'?'Source':'What is it for','' ,'autocomplete="off"');
  h+=`<div class="two">${moneyF('iamt','Amount','')}${curField('icur',v.cur||S.currency)}</div><div class="f"><label for="ifreq">How often</label><select id="ifreq" name="ifreq">${Object.entries(FREQ).map(([k,[l]])=>`<option value="${k}" ${k===v.freq?'selected':''}>${l}</option>`).join('')}</select></div>`;
- if(kind==='expense')h+=`<div class="f"><label for="icat">Category</label><select id="icat" name="icat">${Object.keys(CATS).map(c=>`<option ${c===v.cat?'selected':''}>${c}</option>`).join('')}</select></div>${dueField(v,'expense')}`;
+ if(kind==='expense')h+=`<div class="f"><label for="icat">Category</label><select id="icat" name="icat">${Object.keys(CATS).filter(c=>c!=='Credit cards').map(c=>`<option ${c===v.cat?'selected':''}>${c}</option>`).join('')}</select></div>${dueField(v,'expense')}`;
  h+=`<div class="btns"><button class="pri" type="submit">Save</button><button class="sec2" type="button" id="cancel">Cancel</button>${x?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
  form.innerHTML=h;$('#iname').value=v.name||'';$('#iamt').value=x?num(v.amount):'';sheet.hidden=false;form.scrollTop=0;
 }
@@ -536,7 +541,7 @@ form.addEventListener('click',e=>{
  if(t.classList.contains('x'))t.parentElement.remove();
  if(t.id==='resetS'){S.accounts=SAMPLE();S.sample=true;S.income=SINC();S.expenses=SEXP();S.flowSample=true;ensureCur();save();closeSheet();render()}
  if(t.id==='expB'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='vault-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);$('#bMsg').textContent='Backup file saved to your downloads.'}catch(x){$('#bMsg').textContent="Couldn't save a file here."}}
- if(t.id==='markPaid'){const k=editing==='flow'?'expense':'loan',x=editing==='flow'?flowEdit.x:editing;if(x){closeSheet();markPaid(k,x)}return}
+ if(t.id==='markPaid'){const k=editing==='flow'?'expense':editing.type,x=editing==='flow'?flowEdit.x:editing;if(x){closeSheet();markPaid(k,x)}return}
  if(t.id==='icsB'){exportIcs();return}
  if(t.id==='resetR'){CUR.forEach(c=>{const i=form.querySelector(`[name="r_${c}"]`);if(i)i.value=DEF_RATES[c]})}
  if(t.id==='del'){
@@ -562,7 +567,7 @@ form.addEventListener('submit',e=>{
  Object.assign(a,{bank,name:String(f.get('name')||'').trim(),cur:CUR.includes(f.get('acur'))?f.get('acur'):S.currency,color:okColor(f.get('color'))?f.get('color'):COLORS[0]});
  if(t!=='crypto')a.last4=String(f.get('last4')||'').replace(/\D/g,'').slice(0,4);
  if(t!=='crypto')a.balance=num(f.get('balance'));
- if(t==='credit')a.limit=num(f.get('limit'));
+ if(t==='credit'){a.limit=num(f.get('limit'));a.minDue=num(f.get('minDue'));setDue(a,f.get('due'))}
  if(t==='loan'){a.original=num(f.get('original'));a.rate=num(f.get('rate'));a.monthly=num(f.get('monthly'));a.payFreq=LFREQ[f.get('payFreq')]?f.get('payFreq'):'month';setDue(a,f.get('due'))}
  if(t==='crypto')a.coins=[...form.querySelectorAll('.crow')].map(r=>{const i=r.querySelectorAll('input');return{sym:i[0].value.trim().toUpperCase(),qty:num(i[1].value),value:num(i[2].value)}}).filter(c=>c.sym);
  if(!editing)S.accounts.push(a);
