@@ -252,7 +252,7 @@ const SAMPLE=()=>[
  {id:uid(),type:'credit',bank:'BPI',name:'Rewards Card',last4:'5512',balance:18450.75,limit:150000,color:'#2b2d42'},
  {id:uid(),type:'credit',bank:'Metrobank',name:'Titanium Mastercard',last4:'3390',balance:7820,limit:80000,color:'#17171a'},
  {id:uid(),type:'loan',bank:'Pag-IBIG',name:'Housing loan',last4:'2045',balance:1240000,original:2000000,rate:6.25,monthly:14800,color:'#0f6b57'},
- {id:uid(),type:'loan',bank:'BDO',name:'Auto loan',last4:'8816',balance:385000,original:850000,rate:8.5,monthly:18900,color:'#5b2a86'}];
+ {id:uid(),type:'loan',bank:'BDO',name:'Auto loan',last4:'8816',balance:385000,original:850000,rate:8.5,monthly:4360,payFreq:'week',color:'#5b2a86'}];
 
 const FREQ={week:['Weekly',1],fortnight:['Every 2 weeks',.5],month:['Monthly',12/52],quarter:['Quarterly',4/52],year:['Yearly',1/52]};
 const CATS={Housing:'#c4561a',Food:'#b3261e',Transport:'#1f4fd1',Utilities:'#0b6e99',Subscriptions:'#5b2a86',Insurance:'#2b2d42',Health:'#0f6b57',Family:'#a3195b',Shopping:'#8a6a10',Other:'#6b6b70'};
@@ -286,6 +286,8 @@ const conv=(v,c)=>!c||c===S.currency?v:v*rate(c)/rate(S.currency);
 ensureFlow();
 const perWeek=x=>num(x.amount)*(FREQ[x.freq]||FREQ.month)[1];
 const perWeekM=x=>conv(perWeek(x),x.cur);
+const LFREQ={week:['Weekly','/wk'],fortnight:['Every 2 weeks','/2 wks'],month:['Monthly','/mo']};
+const loanWk=a=>conv(num(a.monthly),a.cur)*(FREQ[LFREQ[a.payFreq]?a.payFreq:'month'][1]);
 const P=w=>S.period==='month'?w*52/12:w;
 const PS=()=>S.period==='month'?'/mo':'/wk';
 
@@ -325,7 +327,7 @@ function card(a,i){
  let mid=`<span class="c-mid">${a.type==='crypto'?'':'<span class="chip"></span>'}<span>${esc(a.name)}${l4}</span></span>`,extra='',label='Balance',right='';
  if(a.type==='crypto'){extra=(a.coins||[]).length?`<span class="coins">${a.coins.map(x=>coinRow(x,k)).join('')}</span>`:'';label='Total value';right=`${(a.coins||[]).length} coin${(a.coins||[]).length===1?'':'s'}`}
  if(a.type==='credit'){const lim=num(a.limit),u=lim?Math.min(100,b/lim*100):0;label='Balance owed';right=lim?`${m(Math.max(0,lim-b),k)} available`:'';extra=lim?`<span class="meter" aria-label="${Math.round(u)}% of limit used"><i style="width:${u}%"></i></span>`:''}
- if(a.type==='loan'){const o=num(a.original),p=o?Math.max(0,Math.min(100,(o-b)/o*100)):0;label='Remaining';right=[a.monthly?`${m(num(a.monthly),k)}/mo`:'',a.rate?`${esc(num(a.rate))}% p.a.`:''].filter(Boolean).join('<br>');extra=o?`<span class="meter" aria-label="${Math.round(p)}% paid off"><i style="width:${p}%"></i></span>`:''}
+ if(a.type==='loan'){const o=num(a.original),p=o?Math.max(0,Math.min(100,(o-b)/o*100)):0;label='Remaining';right=[a.monthly?`${m(num(a.monthly),k)}${(LFREQ[a.payFreq]||LFREQ.month)[1]}`:'',a.rate?`${esc(num(a.rate))}% p.a.`:''].filter(Boolean).join('<br>');extra=o?`<span class="meter" aria-label="${Math.round(p)}% paid off"><i style="width:${p}%"></i></span>`:''}
  return `<button class="card" data-id="${esc(a.id)}" style="--c:${c};animation-delay:${i*45}ms"><span class="c-top"><span class="bank">${esc(a.bank||'Untitled')}</span><span class="kind">${KIND[a.type]}${k!==S.currency?' · '+esc(k):''}</span></span>${mid}${extra}<span class="c-bal"><span><small>${label}</small><strong class="num">${m(b,k)}</strong>${k!==S.currency?`<small class="num">${mo(b,k)} in ${esc(k)}</small>`:''}</span><em class="num">${right}</em></span></button>`;
 }
 const list=(l,t)=>`<div class="list">${l.length?l.map(card).join(''):`<div class="empty">No ${t} yet.</div>`}</div>`;
@@ -346,8 +348,8 @@ function render(){
   const lim=of('credit').reduce((s,a)=>s+conv(num(a.limit),a.cur),0);
   h=sec('Credit cards',m(cr))+(lim?`<p class="sub">${Math.round(cr/lim*100)}% of ${m(lim)} total limit used</p>`:'')+list(of('credit'),'credit cards')+addB('credit','Add credit card');
  }else if(tab==='loans'){
-  const mo=of('loan').reduce((s,a)=>s+conv(num(a.monthly),a.cur),0);
-  h=sec('Loans',m(ln))+(mo?`<p class="sub">${m(mo)} in monthly repayments</p>`:'')+list(of('loan'),'loans')+addB('loan','Add loan');
+  const wk=of('loan').reduce((s,a)=>s+loanWk(a),0);
+  h=sec('Loans',m(ln))+(wk?`<p class="sub">Repayments: ${m(wk*52/12)} a month · ${m(wk)} a week</p>`:'')+list(of('loan'),'loans')+addB('loan','Add loan');
  }else if(tab==='cashflow')h=renderCashflow();
  else h=renderExpenses();
  $('#view').innerHTML=h;
@@ -364,7 +366,7 @@ const itemRow=(x,kind)=>{const col=kind==='income'?'#0a7a4d':(CATS[x.cat]||CATS.
 const byCat=()=>{const o={};S.expenses.forEach(x=>{const c=CATS[x.cat]?x.cat:'Other';(o[c]=o[c]||[]).push(x)});return Object.entries(o).map(([c,l])=>[c,l,l.reduce((s,x)=>s+perWeekM(x),0)]).sort((a,b)=>b[2]-a[2])};
 function renderCashflow(){
  const inc=S.income.reduce((s,x)=>s+perWeekM(x),0),exp=S.expenses.reduce((s,x)=>s+perWeekM(x),0);
- const lnW=of('loan').reduce((s,a)=>s+conv(num(a.monthly),a.cur),0)*12/52,out=exp+lnW,left=inc-out,base=Math.max(inc,out)||1;
+ const lnW=of('loan').reduce((s,a)=>s+loanWk(a),0),out=exp+lnW,left=inc-out,base=Math.max(inc,out)||1;
  const pct=v=>inc?Math.round(v/inc*100)+'%':'—';
  const segs=[['Expenses','#ff4d2e',exp],['Loan repayments','#5b2a86',lnW],['Left over','var(--pos)',Math.max(0,left)]];
  let h=head('Cashflow');
@@ -423,7 +425,7 @@ function openEdit(a,type){
  h+=curField('acur',v.cur||S.currency);
  if(t==='savings')h+=moneyF('balance','Balance',v.balance);
  if(t==='credit')h+=`<div class="two">${moneyF('balance','Amount owed',v.balance)}${moneyF('limit','Credit limit',v.limit)}</div>`;
- if(t==='loan')h+=`<div class="two">${moneyF('balance','Remaining',v.balance)}${moneyF('original','Original amount',v.original)}</div><div class="two">${fld('rate','Interest % p.a.',v.rate??'','inputmode="decimal"')}${moneyF('monthly','Monthly payment',v.monthly)}</div>`;
+ if(t==='loan')h+=`<div class="two">${moneyF('balance','Remaining',v.balance)}${moneyF('original','Original amount',v.original)}</div><div class="two">${fld('rate','Interest % p.a.',v.rate??'','inputmode="decimal"')}${moneyF('monthly','Payment amount',v.monthly)}</div><div class="f"><label for="payFreq">Payment due</label><select id="payFreq" name="payFreq">${Object.entries(LFREQ).map(([k2,[l]])=>`<option value="${k2}" ${k2===(v.payFreq||'month')?'selected':''}>${l}</option>`).join('')}</select></div>`;
  if(ex)h+=`<p class="flab">Coins held</p><p class="hint">Coin, amount held, and its current value in the currency above.</p><div id="coins">${(v.coins||[]).map(crow).join('')}</div><button type="button" class="lnk" id="addCoin">+ Add coin</button>`;
  {const cus=okColor(v.color)&&!COLORS.includes(v.color),cv=cus?v.color:'#e11d48';
  h+=`<p class="flab">Card colour</p><div class="sw">${COLORS.map(c=>`<label><input type="radio" name="color" value="${c}" ${c===v.color?'checked':''} aria-label="${CNAME[c]||c}"><span style="background:${c}"></span></label>`).join('')}
@@ -492,7 +494,7 @@ form.addEventListener('submit',e=>{
  if(t!=='crypto')a.last4=String(f.get('last4')||'').replace(/\D/g,'').slice(0,4);
  if(t!=='crypto')a.balance=num(f.get('balance'));
  if(t==='credit')a.limit=num(f.get('limit'));
- if(t==='loan'){a.original=num(f.get('original'));a.rate=num(f.get('rate'));a.monthly=num(f.get('monthly'))}
+ if(t==='loan'){a.original=num(f.get('original'));a.rate=num(f.get('rate'));a.monthly=num(f.get('monthly'));a.payFreq=LFREQ[f.get('payFreq')]?f.get('payFreq'):'month'}
  if(t==='crypto')a.coins=[...form.querySelectorAll('.crow')].map(r=>{const i=r.querySelectorAll('input');return{sym:i[0].value.trim().toUpperCase(),qty:num(i[1].value),value:num(i[2].value)}}).filter(c=>c.sym);
  if(!editing)S.accounts.push(a);
  S.sample=false;save();closeSheet();render();
