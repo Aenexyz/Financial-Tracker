@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="Vault">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b0b0c">
 <title>Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -592,6 +593,7 @@ async function push(){
 })();
 
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+try{if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname)){navigator.serviceWorker.register('sw.js').then(()=>navigator.serviceWorker.ready).then(()=>{if(!ref){syncMsg='Saved on this device · works offline';if(!$('#app').hidden)$('#sync').textContent=syncMsg}}).catch(()=>{})}}catch(e){}
 drawDots();
 }
 </script>

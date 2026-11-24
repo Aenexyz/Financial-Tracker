@@ -12,6 +12,7 @@ A mobile-first web app for tracking bank balances, crypto, credit cards, loans, 
 - **Expenses:** spending grouped by category, viewable per week or per month.
 - **Multiple currencies.** Each account or item has its own currency, and totals convert into the main currency (₱ PHP by default). You can edit the exchange rates in Settings.
 - **Backup and restore** using a JSON file.
+- **Works offline.** A service worker (`sw.js`) keeps a copy of the app, so it opens with no internet and picks up updates when you're back online.
 
 ## Where your data is stored
 
