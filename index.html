@@ -61,6 +61,12 @@ button{cursor:pointer}
 .split div{background:var(--soft);border-radius:16px;padding:10px 12px}
 .split span{display:block;font-size:13px;color:var(--mut);font-weight:600}
 .split b{font-size:15px}
+.qa{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:12px}
+.qa .paybtn{margin-top:0}
+.qbtn{height:54px;border:0;border-radius:16px;background:var(--soft);color:var(--ink);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px;white-space:nowrap}
+.qbtn svg{width:19px;height:19px;flex:none;color:var(--acc)}
+.qbtn:active{transform:scale(.97)}
+.plus{color:var(--pos)}
 .paybtn{margin-top:12px;width:100%;height:54px;border:0;border-radius:16px;background:var(--acc);color:#fff;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 22px -14px var(--acc)}
 .paybtn:active{transform:scale(.985)}
 .pick{display:grid;gap:8px;margin-bottom:16px}
@@ -70,9 +76,10 @@ button{cursor:pointer}
 .gopay{flex:none;width:0;margin-left:0;padding:0;opacity:0;overflow:hidden;border:0;border-radius:16px;background:var(--acc);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;gap:2px;transition:width .24s cubic-bezier(.2,.8,.2,1),margin .24s,opacity .18s}
 .gopay svg{width:22px;height:22px}
 .srow.armed .gopay{width:92px;margin-left:8px;opacity:1}
-.hist-sum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:0 0 6px}
+.hist-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 6px}
 .hist-sum div{background:var(--soft);border-radius:16px;padding:12px 14px}
-.hist-sum span{display:block;color:var(--mut);font-size:13px;font-weight:600}.hist-sum b{font-size:17px;font-weight:800}
+.hist-sum span{display:block;color:var(--mut);font-size:13px;font-weight:600}.hist-sum b{font-size:clamp(14px,4vw,17px);font-weight:800}
+.hist-sum div{padding:12px}
 .hday{display:flex;justify-content:space-between;margin:18px 2px 6px;font-size:14px;font-weight:700;color:var(--mut)}
 .hgrp{background:var(--soft);border-radius:18px;overflow:hidden}
 .hrow{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:10px 14px;border:0;border-top:1px solid var(--line);background:none;text-align:left}
@@ -90,6 +97,11 @@ button{cursor:pointer}
 .src-c em{grid-row:1/span 2;grid-column:3;font-style:normal;text-align:right;font-weight:800;font-size:14px}
 .src-c em small{display:block;font-weight:600}
 .src-c small.past{color:var(--neg)}.src-c small.soon{color:var(--warn)}
+.pick.compact{gap:6px}
+.pick.compact .src-c{padding:8px 12px;border-radius:14px;grid-template-columns:10px minmax(0,1fr) auto}
+.pick.compact .src-c i{grid-row:auto;height:26px;width:10px}
+.pick.compact .src-c>small,.pick.compact .src-c em small{display:none}
+.pick.compact .src-c em{grid-row:auto}
 .src input:checked+.src-c{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--soft))}
 .src input:focus-visible+.src-c{outline:3px solid var(--acc);outline-offset:2px}
 .pm{display:grid;grid-template-columns:1fr 1fr;width:100%;margin:0 0 16px}
@@ -271,7 +283,7 @@ button{cursor:pointer}
     <p class="lbl">Net worth</p>
     <p class="big num" id="net"></p>
     <div class="split" id="split"></div>
-    <button class="paybtn" id="payBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19M15 15h3"/></svg>Pay</button>
+    <div class="qa"><button class="paybtn" id="payBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19M15 15h3"/></svg>Pay</button><button class="qbtn" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Add funds</button><button class="qbtn" id="xferBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>Transfer</button></div>
   </div>
   <div id="alerts"></div>
   <div id="sampleNote"></div>
@@ -557,7 +569,7 @@ function openEdit(a,type){
  {const cus=okColor(v.color)&&!COLORS.includes(v.color),cv=cus?v.color:'#e11d48';
  h+=`<p class="flab">Card colour</p><div class="sw">${COLORS.map(c=>`<label><input type="radio" name="color" value="${c}" ${c===v.color?'checked':''} aria-label="${CNAME[c]||c}"><span style="background:${c}"></span></label>`).join('')}
  <label class="cus" title="Custom colour"><input type="radio" name="color" id="cusR" value="${cv}" ${cus?'checked':''} aria-label="Custom colour"><span id="cusS" style="background:${cus?cv:'conic-gradient(#f43f5e,#f59e0b,#84cc16,#06b6d4,#6366f1,#d946ef,#f43f5e)'}"></span><input type="color" id="cusP" value="${cv}" aria-label="Pick a custom colour"></label></div>`}
- h+=`<div class="btns"><button class="pri" type="submit">Save</button>${a&&(t==='savings'||t==='credit')?'<button class="sec2" type="button" id="payWith">Pay with this '+(t==='credit'?'card':'account')+'</button>':''}<button class="sec2" type="button" id="cancel">Cancel</button>${a?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
+ h+=`<div class="btns"><button class="pri" type="submit">Save</button>${a&&(t==='savings'||t==='credit')?'<button class="sec2" type="button" id="payWith">Pay with this '+(t==='credit'?'card':'account')+'</button>':''}${a&&t==='savings'?'<div class="two"><button class="sec2" type="button" id="addTo">Add funds</button><button class="sec2" type="button" id="xferFrom">Transfer out</button></div>':''}<button class="sec2" type="button" id="cancel">Cancel</button>${a?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
  form.innerHTML=h;sheet.hidden=false;form.scrollTop=0;
 }
 const dueField=(v,kind)=>{const st=dueSt(v);return `<div class="f"><label for="due">Next due date (optional)</label><input type="date" id="due" name="due" value="${esc(pd(v.dueDate)?v.dueDate:'')}"></div>${st?`<p class="hint ${st.lvl==='ok'?'':st.lvl}" style="font-weight:700">${esc(st.label)}</p><button type="button" class="sec2" id="markPaid" style="width:100%;margin:-4px 0 16px">${kind==='expense'?'Mark this payment as paid':'Make a payment'}</button>`:'<p class="hint">You\'ll get a warning when it\'s almost due or past due.</p>'}`};
@@ -585,23 +597,26 @@ function goPay(){const i=$('#payAmt');if(!i)return;try{i.focus({preventScroll:tr
 function pruneTx(){const c=new Date();c.setMonth(c.getMonth()-3);const cut=c.getTime();S.tx=(Array.isArray(S.tx)?S.tx:[]).filter(t=>t&&t.at>=cut).slice(0,3000)}
 let histF='all',histOpen='';
 function txView(t){const at=new Date(t.at),time=at.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+ if(t.kind==='add'){const a=S.accounts.find(x=>x.id===t.acc);return{title:t.note||'Added funds',sub:'To '+(a?(a.bank||'account'):'a deleted account')+' · '+time,col:a&&okColor(a.color)?a.color:'#888',amt:'+'+mo(t.amt,t.cur),plus:true,tag:'Added',can:!!a,detail:[a?`Added to ${esc(accLabel(a))}`:'']}}
+ if(t.kind==='xfer'){const fa=S.accounts.find(x=>x.id===t.from),ta=S.accounts.find(x=>x.id===t.to);return{title:'Transfer to '+(ta?(ta.bank||'account'):'deleted account'),sub:'From '+(fa?(fa.bank||'account'):'a deleted account')+' · '+time,col:ta&&okColor(ta.color)?ta.color:'#888',amt:mo(t.amt,t.cur),tag:'Transfer',can:!!(fa&&ta),
+  detail:[fa?`${esc(accLabel(fa))} reduced by ${mo(r2(t.amt+num(t.fee)),t.cur)}${num(t.fee)?` (includes ${mo(num(t.fee),t.cur)} fee)`:''}`:'',ta?`${esc(accLabel(ta))} increased by ${mo(t.toAmt,t.toCur)}`:''].filter(Boolean)}}
  if(t.kind==='bill'){const g=S.accounts.find(x=>x.id===t.tgt),sa=S.accounts.find(x=>x.id===t.src);return{title:'Payment to '+(g?accLabel(g):'deleted account'),sub:(t.src?(sa?'From '+(sa.bank||'account'):'From a deleted account'):'Cash or other account')+' · '+time,col:g&&okColor(g.color)?g.color:'#888',amt:mo(t.amt,t.cur),tag:'Bill payment',can:!!g,detail:[g?`${g.type==='loan'?'Remaining':'Owed'} reduced by ${mo(t.amt,t.cur)}`:'',sa?`${esc(accLabel(sa))} reduced by ${mo(t.srcAmt,t.srcCur||sa.cur)}`:'',t.adv?'Due date moved forward':''].filter(Boolean)}}
  const a=S.accounts.find(x=>x.id===t.acc);return{title:t.note||'Purchase',sub:(a?(a.bank||'account')+(a.type==='credit'?' card':''):'Deleted account')+' · '+time,col:a&&okColor(a.color)?a.color:'#888',amt:'−'+mo(t.amt,t.cur),tag:a&&a.type==='credit'?'Card purchase':'Purchase',can:!!a,detail:[a?(a.type==='credit'?`Added ${mo(t.amt,t.cur)} to what you owe on ${esc(accLabel(a))}`:`Taken from ${esc(accLabel(a))}`):'']}}
 function openHistory(f){
  editing='hist';if(f)histF=f;pruneTx();const all=S.tx||[];
- const list=all.filter(t=>histF==='all'||(histF==='bill'?t.kind==='bill':t.kind!=='bill'));
+ const list=all.filter(t=>histF==='all'||(histF==='bill'?t.kind==='bill':histF==='funds'?(t.kind==='add'||t.kind==='xfer'):!t.kind));
  const since=new Date();since.setDate(since.getDate()-30);const m30=all.filter(t=>t.at>=since.getTime());
- const sp=m30.filter(t=>t.kind!=='bill').reduce((s,t)=>s+conv(t.amt,t.cur),0),bp=m30.filter(t=>t.kind==='bill').reduce((s,t)=>s+conv(t.amt,t.cur),0);
+ const sum=f=>m30.filter(f).reduce((s,t)=>s+conv(t.amt,t.cur),0),sp=sum(t=>!t.kind),bp=sum(t=>t.kind==='bill'),ap=sum(t=>t.kind==='add');
  const days=[];list.forEach(t=>{const d=new Date(t.at),k=ymd(d);let g=days.find(x=>x.k===k);if(!g){g={k,d,l:[]};days.push(g)}g.l.push(t)});
  const t0=new Date();t0.setHours(0,0,0,0);
  const dayName=d=>{const n=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-t0)/864e5);return n===0?'Today':n===-1?'Yesterday':d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})};
- const seg=`<div class="per pm" role="group" aria-label="Filter" style="grid-template-columns:repeat(3,1fr)">${[['all','All'],['buy','Purchases'],['bill','Bills']].map(([k,l])=>`<button type="button" data-hf="${k}" aria-pressed="${histF===k}">${l}</button>`).join('')}</div>`;
+ const seg=`<div class="per pm" role="group" aria-label="Filter" style="grid-template-columns:repeat(4,1fr)">${[['all','All'],['buy','Purchases'],['bill','Bills'],['funds','Funds']].map(([k,l])=>`<button type="button" data-hf="${k}" aria-pressed="${histF===k}">${l}</button>`).join('')}</div>`;
  form.innerHTML=`<div class="grab"></div><h3>History</h3>${seg}
- <div class="hist-sum"><div><span>Purchases · last 30 days</span><b class="num">${m(sp)}</b></div><div><span>Bills paid · last 30 days</span><b class="num">${m(bp)}</b></div></div>
- ${days.length?days.map(g=>`<p class="hday"><span>${esc(dayName(g.d))}</span><span class="num">${m(g.l.reduce((s,t)=>s+conv(t.amt,t.cur),0))}</span></p><div class="hgrp">${g.l.map(t=>{const v=txView(t),open=histOpen===t.id;
-  return `<button type="button" class="hrow" data-tx="${esc(t.id)}" aria-expanded="${open}"><span class="hc" style="background:${v.col}"></span><span class="ht"><b>${esc(v.title)}</b><small>${esc(v.sub)}</small></span><strong class="num">${v.amt}<small>${v.tag}</small></strong></button>${open?`<div class="hx">${v.detail.map(x=>`<span>${x}</span>`).join('')}${v.can?`<button type="button" data-undo="${esc(t.id)}">Undo this payment</button>`:''}</div>`:''}`}).join('')}</div>`).join('')
+ <p class="pgh">Last 30 days</p><div class="hist-sum"><div><span>Purchases</span><b class="num">${m(sp)}</b></div><div><span>Bills paid</span><b class="num">${m(bp)}</b></div><div><span>Added</span><b class="num plus">${m(ap)}</b></div></div>
+ ${days.length?days.map(g=>`<p class="hday"><span>${esc(dayName(g.d))}</span><span class="num">${(()=>{const v=g.l.filter(t=>t.kind!=='add'&&t.kind!=='xfer').reduce((s,t)=>s+conv(t.amt,t.cur),0);return v?m(v)+' spent':''})()}</span></p><div class="hgrp">${g.l.map(t=>{const v=txView(t),open=histOpen===t.id;
+  return `<button type="button" class="hrow" data-tx="${esc(t.id)}" aria-expanded="${open}"><span class="hc" style="background:${v.col}"></span><span class="ht"><b>${esc(v.title)}</b><small>${esc(v.sub)}</small></span><strong class="num${v.plus?' plus':''}">${v.amt}<small>${v.tag}</small></strong></button>${open?`<div class="hx">${v.detail.map(x=>`<span>${x}</span>`).join('')}${v.can?`<button type="button" data-undo="${esc(t.id)}">Undo</button>`:''}</div>`:''}`}).join('')}</div>`).join('')
   :`<div class="empty" style="margin-top:14px">${all.length?'Nothing here for this filter.':'No payments yet. Use Pay to record a purchase or pay a bill.'}</div>`}
- <p class="hint" style="margin-top:16px;text-align:center">Payments are kept for 3 months.</p>
+ <p class="hint" style="margin-top:16px;text-align:center">Activity is kept for 3 months.</p>
  <div class="btns"><button class="sec2" type="button" id="cancel">Close</button></div>`;
  sheet.hidden=false;
 }
@@ -633,12 +648,57 @@ function applyTx(t,sign){const a=S.accounts.find(x=>x.id===t.acc);if(!a)return f
 const r2=v=>Math.round(v*100)/100;
 function undoTx(id){const i=(S.tx||[]).findIndex(t=>t.id===id);if(i<0)return;const t=S.tx[i];
  if(t.kind==='bill'){const g=S.accounts.find(x=>x.id===t.tgt),sa=S.accounts.find(x=>x.id===t.src);if(g){g.balance=r2(num(g.balance)+t.amt);if(t.adv&&t.prevDue)g.dueDate=t.prevDue}if(sa)sa.balance=r2(num(sa.balance)+num(t.srcAmt))}
+ else if(t.kind==='add'){const a=S.accounts.find(x=>x.id===t.acc);if(a)a.balance=r2(num(a.balance)-t.amt)}
+ else if(t.kind==='xfer'){const fa=S.accounts.find(x=>x.id===t.from),ta=S.accounts.find(x=>x.id===t.to);if(fa)fa.balance=r2(num(fa.balance)+t.amt+num(t.fee));if(ta)ta.balance=r2(num(ta.balance)-t.toAmt)}
  else applyTx(t,-1);
  S.tx.splice(i,1);save();render();hideToast()}
 function recentHtml(){const r=(S.tx||[]).slice(0,5);if(!r.length)return '';
- return `<div class="sec" style="margin:20px 2px 8px"><span class="pgh" style="margin:0">Recent payments</span><button type="button" class="lnk" data-hist="1" style="margin:0">See all</button></div><div class="txl">${r.map(t=>{const d=esc(new Date(t.at).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
-  if(t.kind==='bill'){const g=S.accounts.find(x=>x.id===t.tgt),sa=S.accounts.find(x=>x.id===t.src);return `<div class="tx"><span><b>Payment to ${esc(g?accLabel(g):'deleted account')}</b><small>${t.src?(sa?'from '+esc(accLabel(sa)):'from a deleted account'):'cash or other account'} · ${d}</small></span><strong class="num">${mo(t.amt,t.cur)}</strong>${g?`<button type="button" data-undo="${esc(t.id)}">Undo</button>`:''}</div>`}
-  const a=S.accounts.find(x=>x.id===t.acc);return `<div class="tx"><span><b>${esc(t.note||'Purchase')}</b><small>${esc(a?accLabel(a):'Deleted account')} · ${d}</small></span><strong class="num">${mo(t.amt,t.cur)}</strong>${a?`<button type="button" data-undo="${esc(t.id)}">Undo</button>`:''}</div>`}).join('')}</div>`}
+ return `<div class="sec" style="margin:20px 2px 8px"><span class="pgh" style="margin:0">Recent activity</span><button type="button" class="lnk" data-hist="1" style="margin:0">See all</button></div><div class="txl">${r.map(t=>{const v=txView(t),d=esc(new Date(t.at).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+  return `<div class="tx"><span><b>${esc(v.title)}</b><small>${esc(v.sub.split(' · ')[0])} · ${d}</small></span><strong class="num${v.plus?' plus':''}">${v.amt}</strong>${v.can?`<button type="button" data-undo="${esc(t.id)}">Undo</button>`:''}</div>`}).join('')}</div>`}
+const FSEG=w=>`<div class="per pm" role="group" aria-label="Type"><button type="button" data-fm="add" aria-pressed="${w==='add'}">Add funds</button><button type="button" data-fm="xfer" aria-pressed="${w==='xfer'}">Transfer</button></div>`;
+const accCard=(a,name,sel)=>`<label class="src"><input type="radio" name="${name}" value="${esc(a.id)}" ${sel?'checked':''}><span class="src-c" style="--c:${okColor(a.color)?a.color:'#2b2d42'}"><i></i><b>${esc(a.bank||'Account')}</b><em class="num">${mo(num(a.balance),a.cur)}<small>balance</small></em><small>${esc(a.name||'Savings')}${a.last4?' · •••• '+esc(a.last4):''}</small></span></label>`;
+let fundsMode='add';
+function openFunds(mode,pre){
+ editing='funds';fundsMode=mode||fundsMode;delArm=false;const sv=S.accounts.filter(a=>a.type==='savings');
+ const head=`<div class="grab"></div><h3>${fundsMode==='add'?'Add funds':'Transfer'}</h3>${FSEG(fundsMode)}`,close=`<div class="btns"><button class="sec2" type="button" id="cancel">Close</button></div>`;
+ if(fundsMode==='add'){
+  if(!sv.length){form.innerHTML=head+`<p class="hint" style="font-size:15px">Add a bank account first.</p>`+close;sheet.hidden=false;return}
+  const sel=sv.find(a=>a.id===pre)||sv.find(a=>a.id===S.lastAdd)||sv[0];
+  form.innerHTML=head+`<p class="pgh">Add to</p><div class="pick">${sv.map(a=>accCard(a,'fto',a===sel)).join('')}</div>
+  <div class="f"><label for="fAmt">Amount <span id="fCur" style="font-weight:600"></span></label><input id="fAmt" name="fAmt" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+  <div class="prev" id="fInfo"></div>
+  <div class="f"><label for="fNote">Where's it from? (optional)</label><input id="fNote" name="fNote" autocomplete="off" maxlength="60" placeholder="Salary, cash deposit, refund…"></div>
+  <div class="btns"><button class="pri" type="submit" id="fGo">Add funds</button><button class="sec2" type="button" id="cancel">Cancel</button></div>${recentHtml()}`;
+ }else{
+  if(sv.length<2){form.innerHTML=head+`<p class="hint" style="font-size:15px">You need at least two bank accounts to transfer between them.</p>`+close;sheet.hidden=false;return}
+  const from=sv.find(a=>a.id===pre)||sv.find(a=>a.id===S.lastXferFrom)||sv[0],to=sv.find(a=>a.id===S.lastXferTo&&a!==from)||sv.find(a=>a!==from);
+  form.innerHTML=head+`<p class="pgh">From</p><div class="pick compact">${sv.map(a=>accCard(a,'ffrom',a===from)).join('')}</div>
+  <p class="pgh">To</p><div class="pick compact" id="toPick">${sv.map(a=>accCard(a,'fto',a===to)).join('')}</div>
+  <div class="two"><div class="f"><label for="fAmt">Amount <span id="fCur" style="font-weight:600"></span></label><input id="fAmt" name="fAmt" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+  <div class="f"><label for="fFee">Fee (optional)</label><input id="fFee" name="fFee" inputmode="decimal" autocomplete="off" placeholder="0.00"></div></div>
+  <div class="prev" id="fInfo"></div>
+  <div class="btns"><button class="pri" type="submit" id="fGo">Transfer</button><button class="sec2" type="button" id="cancel">Cancel</button></div>${recentHtml()}`;
+ }
+ sheet.hidden=false;form.scrollTop=0;fundsPreview();
+}
+function fundsPreview(){
+ const box=$('#fInfo');if(!box)return;const pick=n=>S.accounts.find(x=>x.id===(form.querySelector(`[name=${n}]:checked`)||{}).value);
+ const to=pick('fto'),amt=r2(num($('#fAmt').value)),go=$('#fGo');
+ if(fundsMode==='add'){if(!to)return;$('#fCur').textContent=to.cur+' · '+(SYM[to.cur]||to.cur);const b=num(to.balance);
+  box.innerHTML=`${esc(to.bank||'Account')} balance: <b class="num">${mo(b,to.cur)}</b>`+(amt>0?` → <b class="num">${mo(b+amt,to.cur)}</b>`:'');box.className='prev';
+  go.textContent=amt>0?'Add '+(hideBal?'funds':money(amt,to.cur)):'Add funds';return}
+ const fr=pick('ffrom');
+ if(fr){let first=null;form.querySelectorAll('#toPick .src').forEach(l=>{const i=l.querySelector('input'),same=i.value===fr.id;l.hidden=same;if(!same&&!first)first=i;if(same&&i.checked){i.checked=false}});
+  if(!form.querySelector('#toPick input:checked')&&first)first.checked=true}
+ const to2=pick('fto');if(!fr||!to2)return;if(to2!==to)return fundsPreview();$('#fCur').textContent=fr.cur+' · '+(SYM[fr.cur]||fr.cur);
+ if(fr===to){box.innerHTML='Choose a different account to send to.';box.className='prev bad';go.textContent='Transfer';return}
+ const fee=r2(num($('#fFee').value)),toAmt=r2(amt*rate(fr.cur)/rate(to.cur)),fb=num(fr.balance),tb=num(to.balance),bad=fb-amt-fee<0&&amt>0;
+ box.innerHTML=`${esc(fr.bank||'Account')}: <b class="num">${mo(fb,fr.cur)}</b>`+(amt>0?` → <b class="num">${mo(fb-amt-fee,fr.cur)}</b>`:'')+(fee>0&&amt>0?` <span style="color:var(--mut)">(incl. ${mo(fee,fr.cur)} fee)</span>`:'')
+  +`<br>${esc(to.bank||'Account')}: <b class="num">${mo(tb,to.cur)}</b>`+(amt>0?` → <b class="num">${mo(tb+toAmt,to.cur)}</b>`+(to.cur!==fr.cur?` <span style="color:var(--mut)">(${mo(toAmt,to.cur)})</span>`:''):'')+(bad?'<br>This is more than the account balance.':'');
+ box.className='prev'+(bad?' bad':'');go.textContent=amt>0?'Transfer '+(hideBal?'':money(amt,fr.cur)):'Transfer';
+}
+$('#addBtn').onclick=()=>openFunds('add');
+$('#xferBtn').onclick=()=>openFunds('xfer');
 const billTargets=()=>S.accounts.filter(a=>a.type==='credit'||a.type==='loan');
 function billPresets(t){const l=[];if(t.type==='credit'){if(num(t.minDue)>0)l.push(['Minimum due',num(t.minDue)]);if(num(t.balance)>0)l.push(['Full balance',num(t.balance)])}
  else{if(num(t.monthly)>0)l.push([(LFREQ[t.payFreq]||LFREQ.month)[0]+' payment',num(t.monthly)]);if(num(t.balance)>0)l.push(['Pay off in full',num(t.balance)])}return l}
@@ -686,8 +746,9 @@ function openItem(kind,x){
  h+=`<div class="btns"><button class="pri" type="submit">Save</button><button class="sec2" type="button" id="cancel">Cancel</button>${x?'<button class="del" type="button" id="del">Delete</button>':''}</div>`;
  form.innerHTML=h;$('#iname').value=v.name||'';$('#iamt').value=x?num(v.amount):'';sheet.hidden=false;form.scrollTop=0;
 }
-form.addEventListener('input',e=>{if(editing==='pay')payPreview();if(editing==='bill')billPreview();if(e.target.id==='cusP'){const r=$('#cusR');r.value=e.target.value;r.checked=true;$('#cusS').style.background=e.target.value}});
+form.addEventListener('input',e=>{if(editing==='pay')payPreview();if(editing==='funds')fundsPreview();if(editing==='bill')billPreview();if(e.target.id==='cusP'){const r=$('#cusR');r.value=e.target.value;r.checked=true;$('#cusS').style.background=e.target.value}});
 form.addEventListener('change',async e=>{
+ if(editing==='funds'){fundsPreview();return}
  if(editing==='pay'&&e.target.name==='src'){const sr=e.target.closest('.srow');if(!sr||!sr.classList.contains('armed'))armRow(null);payPreview();return}
  if(editing==='bill'){if(e.target.name==='tgt'){const sp=(form.querySelector('[name=bsrc]:checked')||{}).value;openBill(e.target.value,sp??'')}else billPreview();return}
  if(e.target.id!=='impB'||!e.target.files[0])return;const msg=$('#bMsg');
@@ -710,9 +771,11 @@ form.addEventListener('click',e=>{
  if(t.classList.contains('x'))t.parentElement.remove();
  if(t.id==='resetS'){S.accounts=SAMPLE();S.sample=true;S.income=SINC();S.expenses=SEXP();S.flowSample=true;ensureCur();save();closeSheet();render()}
  if(t.id==='expB'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='vault-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);$('#bMsg').textContent='Backup file saved to your downloads.'}catch(x){$('#bMsg').textContent="Couldn't save a file here."}}
+ if(t.dataset.fm){openFunds(t.dataset.fm);return}
+ if(t.id==='addTo'||t.id==='xferFrom'){const id=editing&&editing.id;closeSheet();openFunds(t.id==='addTo'?'add':'xfer',id);return}
  if(t.dataset.pm){t.dataset.pm==='bill'?openBill():openPay();return}
  if(t.dataset.amt){const i=$('#billAmt');if(t.dataset.amt==='custom'){i.value='';i.focus()}else i.value=t.dataset.amt;billPreview();return}
- if(t.dataset.undo){undoTx(t.dataset.undo);if(editing==='hist'){histOpen='';openHistory()}else closeSheet();return}
+ if(t.dataset.undo){undoTx(t.dataset.undo);if(editing==='hist'){histOpen='';openHistory()}else if(editing==='funds')openFunds();else closeSheet();return}
  if(t.id==='payWith'){const id=editing&&editing.id;closeSheet();openPay(id);return}
  if(t.id==='markPaid'&&editing!=='flow'&&editing&&editing.id){const id=editing.id;closeSheet();openBill(id);return}
  if(t.id==='markPaid'){const k=editing==='flow'?'expense':editing.type,x=editing==='flow'?flowEdit.x:editing;if(x){closeSheet();markPaid(k,x)}return}
@@ -728,6 +791,16 @@ form.addEventListener('click',e=>{
 });
 form.addEventListener('submit',e=>{
  e.preventDefault();const f=new FormData(form);
+ if(editing==='funds'){
+  const to=S.accounts.find(x=>x.id===f.get('fto')&&x.type==='savings'),amt=r2(num(f.get('fAmt')));if(!to)return;
+  if(!(amt>0)){const i=$('#fAmt');i.focus();i.style.borderColor='var(--neg)';return}
+  if(fundsMode==='add'){const t={id:uid(),kind:'add',acc:to.id,amt,cur:to.cur,note:String(f.get('fNote')||'').trim().slice(0,60),at:Date.now()};
+   to.balance=r2(num(to.balance)+amt);S.tx=[t,...(S.tx||[])];S.lastAdd=to.id;S.sample=false;save();closeSheet();render();showToast(`Added ${money(amt,to.cur)} to ${to.bank||'account'}`,t.id);return}
+  const fr=S.accounts.find(x=>x.id===f.get('ffrom')&&x.type==='savings');if(!fr||fr===to){fundsPreview();return}
+  const fee=r2(num(f.get('fFee'))),toAmt=r2(amt*rate(fr.cur)/rate(to.cur));
+  const t={id:uid(),kind:'xfer',from:fr.id,to:to.id,amt,cur:fr.cur,fee,toAmt,toCur:to.cur,at:Date.now()};
+  fr.balance=r2(num(fr.balance)-amt-fee);to.balance=r2(num(to.balance)+toAmt);S.tx=[t,...(S.tx||[])];S.lastXferFrom=fr.id;S.lastXferTo=to.id;S.sample=false;save();closeSheet();render();
+  showToast(`Moved ${money(amt,fr.cur)} from ${fr.bank||'account'} to ${to.bank||'account'}`,t.id);return}
  if(editing==='bill'){
   const g=S.accounts.find(x=>x.id===f.get('tgt')),amt=r2(num(f.get('billAmt')));if(!g)return;
   if(!(amt>0)){const i=$('#billAmt');i.focus();i.style.borderColor='var(--neg)';return}
@@ -768,7 +841,7 @@ let tmr=0,writing=false,again=false;
 function save(){pruneTx();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}clearTimeout(tmr);tmr=setTimeout(push,500)}
 async function push(){
  if(!ref)return;if(writing){again=true;return}writing=true;
- try{await ref.set(JSON.parse(JSON.stringify({accounts:S.accounts,income:S.income,expenses:S.expenses,v:S.v,remind:S.remind,tx:S.tx||[],lastSrc:S.lastSrc||'',lastBillSrc:S.lastBillSrc||'',period:S.period,currency:S.currency,rates:S.rates,sample:!!S.sample,flowSample:!!S.flowSample,updated:Date.now()})));syncMsg='Synced to your Claude account · private to you'}
+ try{await ref.set(JSON.parse(JSON.stringify({accounts:S.accounts,income:S.income,expenses:S.expenses,v:S.v,remind:S.remind,tx:S.tx||[],lastSrc:S.lastSrc||'',lastBillSrc:S.lastBillSrc||'',lastAdd:S.lastAdd||'',lastXferFrom:S.lastXferFrom||'',lastXferTo:S.lastXferTo||'',period:S.period,currency:S.currency,rates:S.rates,sample:!!S.sample,flowSample:!!S.flowSample,updated:Date.now()})));syncMsg='Synced to your Claude account · private to you'}
  catch(e){syncMsg='Saved on this device only — sync unavailable'}
  writing=false;if(again){again=false;push()}else if(!$('#app').hidden)$('#sync').textContent=syncMsg;
 }
@@ -779,7 +852,7 @@ async function push(){
   const id=await user.id();if(!id)return;
   ref=db.doc('data/users/'+id+'/vault');
   const snap=await ref.get(),d=snap.exists?snap.data():null;
-  if(d&&Array.isArray(d.accounts)){S=JSON.parse(JSON.stringify({accounts:d.accounts,income:d.income,expenses:d.expenses,period:d.period,rates:d.rates,v:d.v,remind:d.remind,tx:Array.isArray(d.tx)?d.tx:[],lastSrc:d.lastSrc||'',lastBillSrc:d.lastBillSrc||'',currency:CUR.includes(d.currency)?d.currency:'PHP',sample:!!d.sample,flowSample:!!d.flowSample}));ensureFlow();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}syncMsg='Synced to your Claude account · private to you'}
+  if(d&&Array.isArray(d.accounts)){S=JSON.parse(JSON.stringify({accounts:d.accounts,income:d.income,expenses:d.expenses,period:d.period,rates:d.rates,v:d.v,remind:d.remind,tx:Array.isArray(d.tx)?d.tx:[],lastSrc:d.lastSrc||'',lastBillSrc:d.lastBillSrc||'',lastAdd:d.lastAdd||'',lastXferFrom:d.lastXferFrom||'',lastXferTo:d.lastXferTo||'',currency:CUR.includes(d.currency)?d.currency:'PHP',sample:!!d.sample,flowSample:!!d.flowSample}));ensureFlow();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}syncMsg='Synced to your Claude account · private to you'}
   else if(!S.sample)push();
   else syncMsg='Sync ready — your edits will be saved to your Claude account';
   if(!$('#app').hidden)render();
